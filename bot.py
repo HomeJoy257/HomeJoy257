@@ -7,7 +7,7 @@ from telegram.ext import (
 )
 
 TOKEN    = "8777144457:AAFUEAviXipFH0nQCdCtguvB6gOJR15n73I"
-BASE_URL = "https://joycaravaning.com/product-category/alquiler/?swoof=1&fecha_ini={fi}&fecha_fin={ff}&paged=1&really_curr_tax=104-product_cat"
+BASE_URL = "https://joycaravaning.com/product-category/alquiler/?swoof=1&fecha_ini={fi}&fecha_fin={ff}&paged=1&tax_plazas-dormir={plazas}&tax_plazas={plazas}-plazas&really_curr_tax=104-product_cat"
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
@@ -29,10 +29,11 @@ def calcular_precio(noches):
     else:
         return 125
 
-def construir_url(fi, ff):
+def construir_url(fi, ff, personas):
     return BASE_URL.format(
         fi=fi.strftime("%d-%m-%Y"),
-        ff=ff.strftime("%d-%m-%Y")
+        ff=ff.strftime("%d-%m-%Y"),
+        plazas=personas
     )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -93,7 +94,7 @@ async def recibir_personas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     precio   = calcular_precio(noches)
     total    = precio * noches
     km       = "Ilimitado ✅" if noches >= 7 else f"Máx. {'800' if noches <= 3 else '1.600'} km (0,35€/km extra)"
-    url      = construir_url(fi, ff)
+    url      = construir_url(fi, ff, personas)
     await update.message.reply_text(
         f"🌄 *¡Aquí tienes tu aventura!*\n\n"
         f"📅 {fi.strftime('%d/%m/%Y')} → {ff.strftime('%d/%m/%Y')} ({noches} noches)\n"
