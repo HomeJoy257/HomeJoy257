@@ -135,6 +135,15 @@ FAQ_TEXT = (
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(FAQ_TEXT, parse_mode="Markdown")
 
+async def mensaje_no_reconocido(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🤔 No he entendido tu mensaje.\n\n"
+        "Prueba con uno de estos comandos:\n"
+        "/start — Buscar autocaravana disponible\n"
+        "/faq — Preguntas frecuentes\n"
+        "/cancelar — Cancelar la consulta actual"
+    )
+
 def main():
     app = Application.builder().token(TOKEN).build()
     conv = ConversationHandler(
@@ -148,6 +157,7 @@ def main():
     )
     app.add_handler(conv)
     app.add_handler(CommandHandler("faq", faq))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, mensaje_no_reconocido))
     print("✅ Bot arrancado...")
     app.run_polling()
 
