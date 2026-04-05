@@ -1,40 +1,28 @@
+import os
 import logging
 from datetime import datetime
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent / ".env")
+except ImportError:
+    pass  # python-dotenv no instalado; usar variables de entorno del sistema
 from telegram import Update
 from telegram.ext import (
     Application, CommandHandler, MessageHandler,
     ContextTypes, filters, ConversationHandler
 )
 
-TOKEN    = "8777144457:AAFUEAviXipFH0nQCdCtguvB6gOJR15n73I"
-BASE_URL = "https://joycaravaning.com/product-category/alquiler/?swoof=1&fecha_ini={fi}&fecha_fin={ff}&paged=1&tax_plazas-dormir={plazas}&tax_plazas={plazas}-plazas&really_curr_tax=104-product_cat"
+from helpers import parse_fecha, calcular_precio, construir_url
+
+TOKEN    = os.environ.get("TELEGRAM_TOKEN")
+if not TOKEN:
+    raise RuntimeError("Falta la variable de entorno TELEGRAM_TOKEN. Crea un archivo .env o expórtala.")
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 FECHA_INI, FECHA_FIN, PERSONAS = range(3)
-
-def parse_fecha(texto):
-    for fmt in ("%d/%m/%Y", "%d-%m-%Y"):
-        try:
-            return datetime.strptime(texto.strip(), fmt)
-        except ValueError:
-            continue
-    return None
-
-def calcular_precio(noches):
-    if noches <= 6:
-        return 145
-    elif noches <= 20:
-        return 135
-    else:
-        return 125
-
-def construir_url(fi, ff, personas):
-    return BASE_URL.format(
-        fi=fi.strftime("%d-%m-%Y"),
-        ff=ff.strftime("%d-%m-%Y"),
-        plazas=personas
-    )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
@@ -116,6 +104,37 @@ async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Cancelado. Escribe /start para empezar de nuevo.")
     return ConversationHandler.END
 
+FAQ_TEXT = (
+    "❓ *Preguntas Frecuentes — Joy Caravaning*\n\n"
+    "🪪 *¿Qué carnet necesito?*\n"
+    "Carnet B (coche). Todas nuestras autocaravanas pesan menos de 3.500 kg.\n\n"
+    "💰 *¿Qué incluye el precio?*\n"
+    "Seguro a todo riesgo, asistencia en carretera 24/7, kit de cocina, "
+    "ropa de cama, mesa y sillas de exterior.\n\n"
+    "🐾 *¿Se admiten mascotas?*\n"
+    "Sí, con suplemento de limpieza (consultar al reservar).\n\n"
+    "⛽ *¿Combustible?*\n"
+    "Diésel. Se entrega con el depósito lleno y se devuelve lleno.\n\n"
+    "🔑 *¿Fianza?*\n"
+    "Entre 1.000€ y 1.500€ según el vehículo (se devuelve íntegra si no hay daños).\n\n"
+    "🕐 *Horario de recogida/devolución?*\n"
+    "Recogida: 10:00–13:00 · Devolución: 9:00–12:00\n\n"
+    "🛣️ *Kilometraje*\n"
+    "• 1–3 noches: máx. 800 km (0,35€/km extra)\n"
+    "• 4–6 noches: máx. 1.600 km (0,35€/km extra)\n"
+    "• 7+ noches: ilimitado ✅\n\n"
+    "🚿 *¿Cómo funciona el agua?*\n"
+    "Depósito de agua limpia (100–150L). Puedes rellenar en áreas de servicio "
+    "o campings. El agua gris se vacía en puntos habilitados.\n\n"
+    "🔌 *¿Electricidad?*\n"
+    "Batería auxiliar + toma 230V para conectar en camping. "
+    "Algunos modelos incluyen panel solar.\n\n"
+    "📞 ¿Más dudas? Llámanos: *+34 948 481 490* (Lun–Vie 10:00–18:00)"
+)
+
+async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(FAQ_TEXT, parse_mode="Markdown")
+
 def main():
     app = Application.builder().token(TOKEN).build()
     conv = ConversationHandler(
@@ -128,6 +147,7 @@ def main():
         fallbacks=[CommandHandler("cancelar", cancelar)],
     )
     app.add_handler(conv)
+    app.add_handler(CommandHandler("faq", faq))
     print("✅ Bot arrancado...")
     app.run_polling()
 
