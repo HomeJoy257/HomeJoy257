@@ -137,6 +137,19 @@ def test_alert_red_needs_persistence():
     assert two.state == State.RED
 
 
+def test_both_momentum_windows_computed():
+    """Se calculan AMBAS ventanas (3m primaria, 6m secundaria) y ambas dan un
+    índice válido sobre el mismo dataset."""
+    series = demo_series()
+    h3 = compute(series, 3)
+    h6 = compute(series, 6)
+    assert h3 and h6
+    assert all(0 <= p.index <= 100 for p in h3)
+    assert all(0 <= p.index <= 100 for p in h6)
+    # ventanas distintas -> en general lecturas distintas (no idénticas siempre).
+    assert [p.index for p in h3] != [p.index for p in h6]
+
+
 def test_alert_acceleration_trigger():
     # Salto de +30 dispara por aceleración aunque el nivel no llegue a p80.
     a = evaluate(_mk([10, 12, 60]))

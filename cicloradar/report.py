@@ -22,16 +22,26 @@ def _bar(score: float | None, width: int = 20) -> str:
     return "█" * filled + "░" * (width - filled) + f"  {score:5.1f}"
 
 
-def render(pt: IndexPoint, alert: Alert, fetch: FetchResult | None = None) -> str:
+def render(pt: IndexPoint, alert: Alert, fetch: FetchResult | None = None,
+           *, primary_window: int | None = None, alt=None) -> str:
     L: list[str] = []
     em = _STATE_EMOJI.get(alert.state.value, "")
     L.append("═" * 64)
     L.append(f"  CicloRadar · Índice de riesgo de recesión (España)")
     L.append("═" * 64)
     L.append(f"  Periodo            : {pt.period.isoformat()}")
-    L.append(f"  ÍNDICE             : {pt.index}/100   {em} {alert.state.value}")
+    win = f" (mom {primary_window}m)" if primary_window else ""
+    L.append(f"  ÍNDICE{win:<13}: {pt.index}/100   {em} {alert.state.value}")
     delta = f"{alert.delta:+.0f}" if alert.delta is not None else "n/d"
     L.append(f"  Aceleración (Δ)    : {delta}   ·   gatillo: {alert.trigger}")
+    # Lectura secundaria (otra ventana de momentum), solo informativa.
+    if alt:
+        alt_hist, alt_alert, alt_w = alt
+        alt_pt = alt_hist[-1]
+        alt_em = _STATE_EMOJI.get(alt_alert.state.value, "")
+        alt_delta = f"{alt_alert.delta:+.0f}" if alt_alert.delta is not None else "n/d"
+        L.append(f"  Índice (mom {alt_w}m)    : {alt_pt.index}/100   {alt_em} "
+                 f"{alt_alert.state.value}  (Δ {alt_delta})")
     L.append(f"  Cobertura          : {pt.blocks_available}/5 bloques "
              f"({pt.coverage:.0%})")
     L.append(f"  Compuesto bruto    : {pt.raw_composite}")

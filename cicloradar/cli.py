@@ -26,20 +26,30 @@ from .engine.alert import evaluate
 from . import report
 
 
-def _run_pipeline(series: dict, fetch: FetchResult | None):
-    history = compute(series)
+def _window_summary(series: dict, window: int):
+    """Calcula índice + alerta para una ventana de momentum dada."""
+    history = compute(series, window)
     if not history:
+        return None
+    return history, evaluate(history), window
+
+
+def _run_pipeline(series: dict, fetch: FetchResult | None):
+    primary = _window_summary(series, settings.momentum_window_months)
+    if primary is None:
         print("⚠️  Cobertura insuficiente: no se puede emitir índice.")
-        return None, None, None
-    alert = evaluate(history)
-    return history, alert, fetch
+        return None, None, None, None
+    alt = _window_summary(series, settings.momentum_window_alt)
+    history, alert, _ = primary
+    return history, alert, fetch, alt
 
 
-def _emit(history, alert, fetch, args):
+def _emit(history, alert, fetch, args, alt=None):
     last = history[-1]
     if "--json" in args:
         out = {
             "period": last.period.isoformat(),
+            "momentum_window": settings.momentum_window_months,
             "index": last.index,
             "state": alert.state.value,
             "trigger": alert.trigger,
@@ -50,9 +60,20 @@ def _emit(history, alert, fetch, args):
             "drivers": last.drivers(),
             "reason": alert.reason,
         }
+        if alt:
+            alt_hist, alt_alert, alt_w = alt
+            alt_last = alt_hist[-1]
+            out["alt_window"] = {
+                "momentum_window": alt_w,
+                "index": alt_last.index,
+                "state": alt_alert.state.value,
+                "delta": alt_alert.delta,
+                "trigger": alt_alert.trigger,
+            }
         print(json.dumps(out, ensure_ascii=False, indent=2))
     else:
-        print(report.render(last, alert, fetch))
+        print(report.render(last, alert, fetch, primary_window=settings.momentum_window_months,
+                            alt=alt))
 
     if "--save" in args:
         from .storage import history as store
@@ -67,23 +88,23 @@ def _emit(history, alert, fetch, args):
 
 
 def cmd_demo(args):
-    print("⚙️  Modo DEMO (datos sintéticos deterministas — NO reales)\n")
+    print("⚙️  Modo DEMO (datos sintéticos deterministas — NO reales)\n", file=sys.stderr)
     series = demo_series()
-    history, alert, _ = _run_pipeline(series, None)
+    history, alert, _, alt = _run_pipeline(series, None)
     if history:
-        _emit(history, alert, None, args)
+        _emit(history, alert, None, args, alt)
 
 
 def cmd_run(args):
-    print("📡 Fetch en vivo de todas las fuentes...\n")
+    print("📡 Fetch en vivo de todas las fuentes...\n", file=sys.stderr)
     fetch = fetch_all()
     if not fetch.series:
         print("❌ No se obtuvo ninguna serie. ¿Egress habilitado? ¿FRED_API_KEY?")
         cmd_check(args)
         return
-    history, alert, fetch = _run_pipeline(fetch.series, fetch)
+    history, alert, fetch, alt = _run_pipeline(fetch.series, fetch)
     if history:
-        _emit(history, alert, fetch, args)
+        _emit(history, alert, fetch, args, alt)
 
 
 def cmd_check(args):
@@ -91,7 +112,8 @@ def cmd_check(args):
     print(f"FRED_API_KEY        : {'✅' if settings.fred_api_key else '❌ falta'}")
     print(f"TELEGRAM_BOT_TOKEN  : {'✅' if settings.telegram_token else '❌ falta'}")
     print(f"TELEGRAM_CHAT_ID    : {'✅' if settings.telegram_chat_id else '❌ falta'}")
-    print(f"Ventana momentum    : {settings.momentum_window_months} meses")
+    print(f"Ventana momentum    : {settings.momentum_window_months} meses (primaria) "
+          f"+ {settings.momentum_window_alt} meses (secundaria)")
     print(f"Umbrales            : ámbar={settings.amber_level} rojo={settings.red_level}")
     print(f"Cronología CFC      : v{CHRONOLOGY_VERSION} ({len(CFC_RECESSIONS)} recesiones)")
     print("\nHosts que deben estar en el allowlist de egress:")

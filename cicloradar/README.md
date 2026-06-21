@@ -83,8 +83,9 @@ cicloradar/
 1. **Orientación**: cada indicador se orienta con su `direction` para que
    *"más alto = más riesgo"* siempre.
 2. **Nivel y momentum**: `level_score` = percentil del valor en su propia
-   historia; `momentum_score` = percentil del Δ sobre la ventana (OQ-05, 3m por
-   defecto). `indicator_score = level_w·nivel + momentum_w·momentum`.
+   historia; `momentum_score` = percentil del Δ sobre la ventana. Se calculan
+   **dos ventanas** (OQ-05): 3 meses (primaria, gobierna la alerta) y 6 meses
+   (secundaria, se muestra como comparación). `indicator_score = level_w·nivel + momentum_w·momentum`.
    (IBEX es **momentum puro**.)
 3. **Bloques**: cada bloque = media de sus indicadores vivos. **5 bloques,
    1/5 cada uno** (pesos por bloque, no por indicador → la economía real no
@@ -117,7 +118,7 @@ prohibido.
 | **OQ-02** umbrales | Como el índice ya es percentil, ámbar=80, rojo=90 (literal). |
 | **OQ-03** aceleración | ámbar Δ≥10, rojo Δ≥15 puntos/mes (a recalibrar sobre histórico real, sin optimizar). |
 | **OQ-04** series | Ver `series_registry.py`. Validadas en FRED las point-in-time; INE/ECB/Eurostat marcadas como confirmación. `visados` lleva código INE **provisional a validar**. |
-| **OQ-05** ventana momentum | 3 meses (`MOMENTUM_WINDOW`, prueba 6). |
+| **OQ-05** ventana momentum | Se calculan **ambas**: 3m primaria (gobierna la alerta) + 6m secundaria (comparación). `MOMENTUM_WINDOW` / `MOMENTUM_WINDOW_ALT`. |
 | **OQ-06** almacenamiento | SQLite en fichero (sin servidor). Cron en Hetzner. |
 
 ---
