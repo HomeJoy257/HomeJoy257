@@ -22,6 +22,9 @@ python -m cicloradar.cli demo
 # 2) Diagnóstico de entorno (claves + egress)
 python -m cicloradar.cli check
 
+# 2b) Depurar cada API/serie por separado (qué responde y qué falla)
+python -m cicloradar.cli probe
+
 # 3) Fetch en vivo + índice + alerta (requiere FRED_API_KEY y egress abierto)
 export FRED_API_KEY=xxxx
 python -m cicloradar.cli run --save --notify

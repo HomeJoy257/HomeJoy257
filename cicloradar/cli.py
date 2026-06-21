@@ -4,6 +4,7 @@ CLI de CicloRadar.
   python -m cicloradar.cli demo      # pipeline completo con datos sintéticos (offline)
   python -m cicloradar.cli run       # fetch en vivo + índice + alerta (requiere egress)
   python -m cicloradar.cli check     # diagnóstico de entorno (keys, egress)
+  python -m cicloradar.cli probe     # prueba cada API/serie una a una (depuración)
   python -m cicloradar.cli history   # vuelca el histórico almacenado
 
 Flags de `run`/`demo`:
@@ -193,6 +194,44 @@ def cmd_verify(args):
     print("   (CSV con líneas 'YYYY-MM,valor'). Pásame el CSV y lo corro aquí.")
 
 
+def cmd_probe(args):
+    """Prueba CADA fuente/serie por separado. Herramienta de depuración: dice
+    qué API responde, cuántas observaciones trae, última fecha/valor y, si falla,
+    el error exacto (egress, series_id mal, etc.)."""
+    from .constants.series_registry import INDICATORS
+    from .data import fetcher
+    from .data.http import EgressBlocked
+
+    print("🔬 Probe de fuentes (una API/serie por línea)\n" + "─" * 72)
+    ok = warn = fail = 0
+    for ind in INDICATORS:
+        srcs = list(ind.sources) + ([ind.deflator] if ind.deflator else [])
+        for src in srcs:
+            tag = f"{ind.key} · {src.provider.value}:{src.series_id}"
+            try:
+                s = fetcher._fetch_source(src)
+                n = len(s.obs)
+                if n == 0:
+                    print(f"⚠️  {tag}\n     0 observaciones (¿filtro/series_id?)")
+                    warn += 1
+                    continue
+                last = s.obs[-1]
+                print(f"✅ {tag}\n     {n} obs · último {last.period.isoformat()} = {last.value}")
+                ok += 1
+            except EgressBlocked as e:
+                print(f"⛔ {tag}\n     EGRESS BLOQUEADO: {e}")
+                fail += 1
+            except Exception as e:  # noqa: BLE001
+                print(f"❌ {tag}\n     {type(e).__name__}: {str(e)[:140]}")
+                fail += 1
+    print("─" * 72)
+    print(f"Resumen: ✅ {ok}  ⚠️ {warn}  ❌ {fail}")
+    if fail:
+        print("\nPistas: ⛔ = abre el host en el allowlist / fuera del sandbox.")
+        print("        ❌ con un series_id = validar el código (OQ-04, p.ej. visados INE).")
+    sys.exit(0 if fail == 0 else 1)
+
+
 def cmd_qa(args):
     """Harness de calidad. Backtest contra CFC + gates. Sale !=0 si falla.
 
@@ -242,7 +281,8 @@ def cmd_qa(args):
 
 
 _COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check,
-             "history": cmd_history, "verify": cmd_verify, "qa": cmd_qa}
+             "history": cmd_history, "verify": cmd_verify, "qa": cmd_qa,
+             "probe": cmd_probe}
 
 
 def main(argv: list[str] | None = None):
