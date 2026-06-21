@@ -25,7 +25,7 @@ class Settings:
     telegram_chat_id: str | None = _env("TELEGRAM_CHAT_ID")
 
     # --- Ventana de momentum (OQ-05): 3 ó 6 meses ------------------------ #
-    momentum_window_months: int = int(_env("MOMENTUM_WINDOW", "6"))
+    momentum_window_months: int = int(_env("MOMENTUM_WINDOW", "3"))
 
     # --- Umbrales de alerta (OQ-02/03) — punto de arranque, NO optimizado - #
     # El índice ya es un percentil 0-100, así que p80/p90 son literalmente 80/90.
