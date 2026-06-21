@@ -1,0 +1,11 @@
+# CicloRadar — cron mensual (OQ-01).
+# La mayoría de adelantadas son mensuales; el ESI se publica a finales de mes,
+# así que recalculamos el día 2 de cada mes a las 08:00 (ya hay dato del mes previo).
+#
+# Instalar:  crontab -e   y pegar (ajusta la ruta absoluta):
+#
+# m h dom mon dow   comando
+  0 8 2 * *   /ruta/a/HomeJoy257/deploy/run.sh >> /var/log/cicloradar.log 2>&1
+#
+# Para pruebas rápidas, ejecución semanal (lunes 08:00):
+#  0 8 * * 1   /ruta/a/HomeJoy257/deploy/run.sh >> /var/log/cicloradar.log 2>&1

@@ -1,0 +1,10 @@
+[Unit]
+Description=CicloRadar — recálculo del índice de riesgo de recesión
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/ruta/HomeJoy257
+ExecStart=/ruta/HomeJoy257/deploy/run.sh
+# El usuario/servicio debe poder leer .env y escribir el SQLite.
