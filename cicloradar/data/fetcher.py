@@ -104,6 +104,23 @@ def _apply_breaks(ind: Indicator, s: Series, log_out: list[BreakDecision]) -> Se
 # --------------------------------------------------------------------------- #
 #  API pública
 # --------------------------------------------------------------------------- #
+def apply_break_policy(series: dict[str, Series]
+                       ) -> tuple[dict[str, Series], list[BreakDecision]]:
+    """Aplica la política de ruptura estructural (FR-02) a un dict de series ya
+    construidas (p.ej. el dataset demo), para que cualquier ruta — en vivo u
+    offline — pase por el MISMO tratamiento. Devuelve (series, log)."""
+    out: dict[str, Series] = {}
+    log: list[BreakDecision] = []
+    for ind in INDICATORS:
+        s = series.get(ind.key)
+        if s is None:
+            continue
+        s2 = _apply_breaks(ind, s, log)
+        if s2 and s2.obs:
+            out[ind.key] = s2.clean()
+    return out, log
+
+
 def fetch_all(indicators: list[Indicator] | None = None) -> FetchResult:
     indicators = indicators or INDICATORS
     res = FetchResult()

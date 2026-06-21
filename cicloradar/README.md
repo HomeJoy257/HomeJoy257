@@ -33,7 +33,32 @@ python -m cicloradar.cli history
 python -m cicloradar.cli verify                       # muestra fija + comprobación a mano
 python -m cicloradar.cli verify --csv tus_datos.csv   # datos REALES sin red (YYYY-MM,valor)
 python -m cicloradar.cli verify --indicator hy_spread # serie real en vivo (egress + key)
+
+# 6) QA autónomo: backtest contra CFC + gates de calidad (loop-friendly)
+python -m cicloradar.cli qa            # informe de calidad (sale !=0 si falla)
+python -m cicloradar.cli qa --loop 5   # repite y verifica reproducibilidad
+python -m cicloradar.cli qa --live     # QA sobre datos reales (egress + key)
 ```
+
+### QA / calidad del resultado (`qa`)
+
+Harness autónomo (`cicloradar/quality.py`) que valida que el índice es BUENO,
+no solo que corre. Seis gates + backtest contra la cronología CFC:
+
+| Gate | Qué comprueba |
+|------|----------------|
+| G1 Bounds | índice 0-100 y cobertura válida en todo punto |
+| G2 Determinismo | recomputar da exactamente lo mismo |
+| G3 Momentum | la comprobación a mano del motor cuadra |
+| G4 Rupturas | la política de ruptura se aplicó (visados sin pre-2008) |
+| G5 Discriminación | índice medio pre-recesión − calma ≥ 3 pts |
+| G6 Backtest | recall de recesiones (ÁMBAR+ con lead) y tasa de falsas alarmas |
+
+Sale con código `!=0` si algún gate crítico falla → encadenable en cron/CI. Los
+criterios de aceptación del QA **no** son parámetros del modelo (el hard block de
+no-optimización sigue intacto). Sobre el dataset demo: **100/100, recall 1.0,
+lead mediano 12 meses, 0.1 de falsas alarmas**. Sobre datos reales (`--live`) el
+mismo harness da la calidad real.
 
 Flags de `run`/`demo`: `--save` (persiste en SQLite), `--notify` (Telegram si no
 es VERDE), `--json` (salida JSON).

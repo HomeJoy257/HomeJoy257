@@ -193,8 +193,56 @@ def cmd_verify(args):
     print("   (CSV con líneas 'YYYY-MM,valor'). Pásame el CSV y lo corro aquí.")
 
 
+def cmd_qa(args):
+    """Harness de calidad. Backtest contra CFC + gates. Sale !=0 si falla.
+
+      qa                 -> QA sobre datos demo (offline)
+      qa --live          -> QA sobre datos reales (fetch; egress + key)
+      qa --loop N        -> repite N veces (verifica estabilidad); falla si algún
+                            ciclo no es PASS o no es reproducible
+    """
+    from . import quality
+
+    def _series():
+        if "--live" in args:
+            fetch = fetch_all()
+            if not fetch.series:
+                print("❌ Sin datos en vivo (egress/clave). Usa demo.")
+                return None
+            return fetch.series
+        return demo_series()
+
+    loops = 1
+    if "--loop" in args:
+        i = args.index("--loop")
+        loops = int(args[i + 1]) if i + 1 < len(args) else 3
+
+    last_scores = []
+    all_ok = True
+    for n in range(1, loops + 1):
+        series = _series()
+        if series is None:
+            sys.exit(2)
+        report = quality.run_qa(series)
+        if loops > 1:
+            print(f"── ciclo {n}/{loops} ─ score {report.score} ─ "
+                  f"{'PASS' if report.ok else 'FAIL'}")
+        else:
+            print(quality.render(report))
+        last_scores.append(report.score)
+        all_ok = all_ok and report.ok
+
+    if loops > 1:
+        stable = len(set(last_scores)) == 1
+        print(f"\nEstabilidad: scores={last_scores} -> "
+              f"{'reproducible ✅' if stable else 'NO reproducible ❌'}")
+        all_ok = all_ok and stable
+
+    sys.exit(0 if all_ok else 1)
+
+
 _COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check,
-             "history": cmd_history, "verify": cmd_verify}
+             "history": cmd_history, "verify": cmd_verify, "qa": cmd_qa}
 
 
 def main(argv: list[str] | None = None):

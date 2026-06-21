@@ -49,6 +49,28 @@ def _condition(index: int, delta: float | None, level_thr: float,
     return False, "-"
 
 
+def states_timeline(history: list[IndexPoint]):
+    """Corre la máquina de estados HACIA ADELANTE y devuelve el estado en CADA
+    periodo (para backtest). Misma lógica que `evaluate` pero acumulando la
+    racha roja en orden temporal."""
+    from datetime import date  # local
+    out: list[tuple[date, State, str]] = []
+    red_streak = 0
+    for i, pt in enumerate(history):
+        prev = history[i - 1] if i >= 1 else None
+        delta = (pt.index - prev.index) if prev else None
+        red_now, red_trig = _condition(pt.index, delta, settings.red_level, settings.red_accel)
+        amber_now, amber_trig = _condition(pt.index, delta, settings.amber_level, settings.amber_accel)
+        red_streak = red_streak + 1 if red_now else 0
+        if red_streak >= settings.red_persistence:
+            out.append((pt.period, State.RED, red_trig))
+        elif amber_now:
+            out.append((pt.period, State.AMBER, amber_trig))
+        else:
+            out.append((pt.period, State.GREEN, "-"))
+    return out
+
+
 def evaluate(history: list[IndexPoint]) -> Alert:
     """Evalúa el estado en la última lectura, usando la historia para la
     persistencia (ROJO necesita N consecutivas)."""

@@ -81,5 +81,10 @@ def _series_for(key: str, periods: list[date]) -> Series:
 
 
 def demo_series() -> dict[str, Series]:
+    """Dataset demo que pasa por la MISMA política de ruptura que el fetch real,
+    para que la ruta offline sea fiel al pipeline en vivo (FR-02)."""
+    from .fetcher import apply_break_policy
     periods = _months(_START, _END)
-    return {ind.key: _series_for(ind.key, periods) for ind in INDICATORS}
+    raw = {ind.key: _series_for(ind.key, periods) for ind in INDICATORS}
+    series, _log = apply_break_policy(raw)
+    return series

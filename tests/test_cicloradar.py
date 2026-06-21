@@ -137,6 +137,36 @@ def test_alert_red_needs_persistence():
     assert two.state == State.RED
 
 
+def test_qa_passes_on_demo():
+    """El harness de calidad debe pasar todos los gates críticos sobre demo."""
+    from cicloradar import quality
+    rep = quality.run_qa(demo_series())
+    assert rep.ok, [g.name for g in rep.gates if g.critical and not g.passed]
+    assert rep.score == 100.0
+
+
+def test_qa_backtest_catches_recessions():
+    """El backtest debe avisar (ÁMBAR+) de las 3 recesiones cubiertas con lead."""
+    from cicloradar import quality
+    from cicloradar.engine.aggregate import compute
+    bt = quality.backtest(compute(demo_series()))
+    assert bt["covered_recessions"] == 3
+    assert bt["recall"] == 1.0
+    assert bt["false_alarm_rate"] <= quality.MAX_FALSE_ALARM_RATE
+
+
+def test_qa_reproducible():
+    from cicloradar import quality
+    s = demo_series()
+    assert quality.run_qa(s).score == quality.run_qa(s).score
+
+
+def test_structural_break_applied_in_demo():
+    """visados no debe conservar tramo pre-2008 (DROP_PRE) en la ruta offline."""
+    s = demo_series()["visados"]
+    assert all(o.period >= date(2008, 1, 1) for o in s.obs)
+
+
 def test_verify_hand_check():
     """La comprobación manual del momentum no debe lanzar (motor == aritmética)."""
     from cicloradar import verify
