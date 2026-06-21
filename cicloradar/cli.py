@@ -146,7 +146,55 @@ def cmd_history(args):
         print(f"{p:<12}{idx:>7}{cov:>4}/5  {state or '-'} ({trig or '-'})")
 
 
-_COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check, "history": cmd_history}
+def cmd_verify(args):
+    """Verifica el cálculo de momentum sobre datos reales o de muestra.
+
+      verify                          -> muestra fija + comprobación a mano
+      verify --csv datos.csv          -> CSV del usuario 'periodo,valor' (REAL, sin red)
+      verify --fred IRLTLT01ESM156N   -> serie FRED en vivo (egress + FRED_API_KEY)
+      verify --indicator hy_spread    -> el indicador del registro (en vivo)
+    """
+    from . import verify as v
+
+    windows = (settings.momentum_window_months, settings.momentum_window_alt)
+
+    def _opt(flag):
+        return args[args.index(flag) + 1] if flag in args and args.index(flag) + 1 < len(args) else None
+
+    csv_path = _opt("--csv")
+    fred_id = _opt("--fred")
+    ind_key = _opt("--indicator")
+
+    if csv_path:
+        s = v.from_csv(csv_path)
+        print(f"📄 Datos REALES desde CSV: {csv_path}\n")
+        print(v.trace_momentum(s, windows, tail=int(_opt("--tail") or 18)))
+        return
+    if fred_id or ind_key:
+        from .data import fred
+        from .constants.series_registry import get_indicator
+        sid = fred_id or get_indicator(ind_key).primary().series_id
+        print(f"📡 Fetch en vivo FRED: {sid}\n")
+        try:
+            s = fred.get_series(sid).to_monthly()
+            print(v.trace_momentum(s, windows, tail=int(_opt("--tail") or 18)))
+        except Exception as e:  # noqa: BLE001
+            print(f"❌ No se pudo fetchear ({type(e).__name__}: {e}).")
+            print("   ¿Egress abierto a api.stlouisfed.org y FRED_API_KEY puesta?")
+        return
+
+    # Por defecto: muestra fija + comprobación a mano (offline, auditable).
+    print("🧪 Verificación del motor de momentum (ventanas "
+          f"{windows[0]}m y {windows[1]}m)\n")
+    print(v.trace_momentum(v.sample(), windows, tail=12))
+    print()
+    print(v.hand_check())
+    print("\n💡 Para datos REALES sin red: `verify --csv tus_datos.csv`")
+    print("   (CSV con líneas 'YYYY-MM,valor'). Pásame el CSV y lo corro aquí.")
+
+
+_COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check,
+             "history": cmd_history, "verify": cmd_verify}
 
 
 def main(argv: list[str] | None = None):

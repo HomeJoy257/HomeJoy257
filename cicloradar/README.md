@@ -28,6 +28,11 @@ python -m cicloradar.cli run --save --notify
 
 # 4) Ver el histórico almacenado
 python -m cicloradar.cli history
+
+# 5) Verificar el cálculo de momentum (auditable, paso a paso)
+python -m cicloradar.cli verify                       # muestra fija + comprobación a mano
+python -m cicloradar.cli verify --csv tus_datos.csv   # datos REALES sin red (YYYY-MM,valor)
+python -m cicloradar.cli verify --indicator hy_spread # serie real en vivo (egress + key)
 ```
 
 Flags de `run`/`demo`: `--save` (persiste en SQLite), `--notify` (Telegram si no

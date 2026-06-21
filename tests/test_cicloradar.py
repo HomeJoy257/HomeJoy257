@@ -137,6 +137,26 @@ def test_alert_red_needs_persistence():
     assert two.state == State.RED
 
 
+def test_verify_hand_check():
+    """La comprobación manual del momentum no debe lanzar (motor == aritmética)."""
+    from cicloradar import verify
+    out = verify.hand_check()
+    assert "cuadra" in out
+
+
+def test_verify_csv_roundtrip(tmp_path):
+    from cicloradar import verify
+    p = tmp_path / "d.csv"
+    p.write_text("periodo,valor\n2025-01,3.0\n2025-02,3.5\n2025-03,4.0\n"
+                 "2025-04,4.6\n", encoding="utf-8")
+    s = verify.from_csv(str(p))
+    assert s.values() == [3.0, 3.5, 4.0, 4.6]            # cabecera ignorada
+    assert s.periods()[0] == date(2025, 1, 1)
+    # Δ3m del último = 4.6 - 3.0 = 1.6
+    from cicloradar.engine.percentile import momentum
+    assert abs(momentum(s.values(), 3)[-1] - 1.6) < 1e-9
+
+
 def test_both_momentum_windows_computed():
     """Se calculan AMBAS ventanas (3m primaria, 6m secundaria) y ambas dan un
     índice válido sobre el mismo dataset."""
