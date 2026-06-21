@@ -1,0 +1,4 @@
+# CicloRadar — stack mínimo (NFR: APIs gratuitas, sin ML, determinista)
+requests>=2.31
+# Nota: el cálculo del índice es Python puro (sin numpy/pandas). 'requests' es
+# la única dependencia de red. Telegram se usa vía Bot API HTTP (sin SDK async).
