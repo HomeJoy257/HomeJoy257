@@ -137,6 +137,25 @@ def test_alert_red_needs_persistence():
     assert two.state == State.RED
 
 
+def test_fragility_real_snapshot():
+    """El índice de fragilidad es determinista, en rango, y hoy < 2008."""
+    from cicloradar import fragility
+    r = fragility.compute()
+    assert 0 <= r.index <= 100
+    assert 0 <= r.index_2008 <= 100
+    assert r.index < r.index_2008          # hoy menos frágil que 2008
+    for sc in r.axis_scores.values():
+        assert 0 <= sc <= 100
+
+
+def test_fragility_avoids_government_sources():
+    """Diseño: ninguna fuente de cabecera es INE/BdE (posible sesgo político)."""
+    from cicloradar.fragility import AXES, Independence
+    assert all(a.independence != Independence.NATIONAL for a in AXES)
+    # al menos una señal de mercado (no cocinable) como contraste.
+    assert any(a.independence == Independence.MARKET for a in AXES)
+
+
 def test_qa_passes_on_demo():
     """El harness de calidad debe pasar todos los gates críticos sobre demo."""
     from cicloradar import quality

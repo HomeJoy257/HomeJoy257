@@ -280,9 +280,15 @@ def cmd_qa(args):
     sys.exit(0 if all_ok else 1)
 
 
+def cmd_fragility(args):
+    """Índice de fragilidad del hogar (datos reales, fuentes independientes)."""
+    from . import fragility
+    print(fragility.render())
+
+
 _COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check,
              "history": cmd_history, "verify": cmd_verify, "qa": cmd_qa,
-             "probe": cmd_probe}
+             "probe": cmd_probe, "fragility": cmd_fragility}
 
 
 def main(argv: list[str] | None = None):
