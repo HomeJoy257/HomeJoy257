@@ -20,5 +20,8 @@ if ! "$PY" -m cicloradar.cli qa --live >/tmp/cicloradar_qa.log 2>&1; then
   echo "$(date -Is) QA FAIL — revisar /tmp/cicloradar_qa.log" >&2
 fi
 
-# 2) Cálculo + alerta.
+# 2) Cálculo + alerta (ciclo).
 "$PY" -m cicloradar.cli run --save --notify
+
+# 3) Fragilidad del hogar (datos reales, fuentes independientes).
+"$PY" -m cicloradar.cli fragility

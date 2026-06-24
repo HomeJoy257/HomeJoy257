@@ -3,6 +3,8 @@ CLI de CicloRadar.
 
   python -m cicloradar.cli demo      # pipeline completo con datos sintéticos (offline)
   python -m cicloradar.cli run       # fetch en vivo + índice + alerta (requiere egress)
+  python -m cicloradar.cli panel     # LOS DOS RELOJES: ciclo + fragilidad en una foto
+  python -m cicloradar.cli fragility # solo índice de fragilidad del hogar
   python -m cicloradar.cli check     # diagnóstico de entorno (keys, egress)
   python -m cicloradar.cli probe     # prueba cada API/serie una a una (depuración)
   python -m cicloradar.cli history   # vuelca el histórico almacenado
@@ -286,9 +288,63 @@ def cmd_fragility(args):
     print(fragility.render())
 
 
+def _combined_reading(ciclo: int | None, fragilidad: int) -> str:
+    """Lectura conjunta de los dos relojes: ¿viene? x ¿cuánto duele?"""
+    if ciclo is None:
+        return ("Ciclo: feed real no conectado (pon FRED_API_KEY / abre egress). "
+                f"Fragilidad: {fragilidad}/100.")
+    hi_c, hi_f = ciclo >= 60, fragilidad >= 50
+    if hi_c and hi_f:
+        m = "🔴 PELIGRO: el ciclo se tensiona Y el hogar está expuesto. Máxima cautela."
+    elif hi_c and not hi_f:
+        m = "🟠 Viene tensión de ciclo, pero el hogar aguanta bien. Vigilar."
+    elif not hi_c and hi_f:
+        m = "🟡 Ciclo tranquilo, pero expuesto si llega un golpe. Reforzar colchón."
+    else:
+        m = "🟢 Ciclo tranquilo y hogar con margen. Sin señales de alarma."
+    return m
+
+
+def cmd_panel(args):
+    """LOS DOS RELOJES en una sola foto: CicloRadar + FragilidadRadar."""
+    from . import fragility
+    # 1) Ciclo: intenta feed real; si no hay datos, lo deja en None.
+    ciclo_idx, ciclo_state = None, None
+    try:
+        fetch = fetch_all()
+        if fetch.series:
+            history, alert, _, alt = _run_pipeline(fetch.series, fetch)
+            if history:
+                ciclo_idx, ciclo_state = history[-1].index, alert.state.value
+                print(report.render(history[-1], alert, fetch,
+                                    primary_window=settings.momentum_window_months, alt=alt))
+                if "--save" in args:
+                    from .storage import history as store
+                    store.save_history(history); store.save_point(history[-1], alert)
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️  CicloRadar (ciclo) sin feed real: {type(e).__name__}.")
+
+    if ciclo_idx is None:
+        print("⚠️  CicloRadar (ciclo): feed real no conectado en este entorno.")
+        print("    -> en tu PC: pon FRED_API_KEY y corre `panel` (o `run`).")
+
+    # 2) Fragilidad: snapshot real, siempre disponible.
+    print()
+    print(fragility.render())
+    frag_idx = fragility.compute().index
+
+    # 3) Lectura conjunta.
+    print()
+    print("═" * 72)
+    cs = f"{ciclo_idx}/100 ({ciclo_state})" if ciclo_idx is not None else "n/d"
+    print(f"  PANEL · Ciclo: {cs}   ·   Fragilidad hogar: {frag_idx}/100")
+    print("  " + _combined_reading(ciclo_idx, frag_idx))
+    print("═" * 72)
+
+
 _COMMANDS = {"demo": cmd_demo, "run": cmd_run, "check": cmd_check,
              "history": cmd_history, "verify": cmd_verify, "qa": cmd_qa,
-             "probe": cmd_probe, "fragility": cmd_fragility}
+             "probe": cmd_probe, "fragility": cmd_fragility, "panel": cmd_panel}
 
 
 def main(argv: list[str] | None = None):
