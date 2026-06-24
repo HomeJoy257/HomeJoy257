@@ -198,11 +198,13 @@ INDICATORS: list[Indicator] = [
         name="M1 real",
         block=Block.MERCADO,
         sources=[
-            Source(Provider.FRED, "MANMM101EZM189S", True,
-                   "M1 zona euro (OECD/FRED), nivel nominal."),
+            # M1 zona euro VIGENTE (ECB BSI). La de FRED (MANMM101EZM189S) está
+            # congelada en nov-2023 (OECD discontinuó) -> inútil en vivo.
+            Source(Provider.ECB, "BSI/M.U2.Y.V.M10.X.1.U2.2300.Z01.E", False,
+                   "M1 zona euro, saldo en circulación (ECB BSI), serie vigente."),
         ],
         deflator=Source(Provider.FRED, "CP0000EZ19M086NEST", True,
-                        "HICP zona euro (índice 2015=100), deflactor oficial."),
+                        "HICP zona euro (índice 2015=100), deflactor oficial (al día)."),
         direction=-1,  # M1 real creciente = MENOS riesgo (liquidez)
         level_weight=0.3, momentum_weight=0.7,  # el impulso monetario avisa por momentum
         transform="real_deflate",
