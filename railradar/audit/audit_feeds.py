@@ -23,6 +23,7 @@ import json
 import statistics
 import sys
 import time
+import urllib.parse
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -41,24 +42,48 @@ UA = "RailRadar-audit/1.0"
 # ---------------------------------------------------------------- HTTP / CKAN
 def http_get(url: str, timeout: int = 30) -> tuple[int, bytes, dict]:
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.status, r.read(), dict(r.headers)
+    with urllib.request.urlopen(req, timeout=timeout) as r:  # TLS verificado por defecto
+        h = dict(r.headers)
+        h["_final_url"] = r.geturl()
+        return r.status, r.read(), h
+
+
+def _json_resources(pkg: dict) -> list[dict]:
+    return [r for r in pkg.get("resources", [])
+            if (r.get("format") or "").upper() == "JSON" and r.get("url")]
 
 
 def discover_feeds() -> dict[str, dict]:
+    """Busca en CKAN de Renfe. Si el id del dataset no existe, busca por texto
+    y lo deja registrado para revisión (nunca inventa URLs)."""
     feeds = {}
     for name, ds in DATASETS.items():
-        _, body, _ = http_get(f"{CKAN}/package_show?id={ds}")
-        payload = json.loads(body)
-        if not payload.get("success"):
-            raise RuntimeError(f"CKAN sin éxito: {ds}")
-        res = [r for r in payload["result"]["resources"]
-               if (r.get("format") or "").upper() == "JSON" and r.get("url")]
-        if len(res) != 1:
-            listing = [(r.get("name"), r.get("format"), r.get("url")) for r in payload["result"]["resources"]]
-            raise RuntimeError(f"{ds}: {len(res)} recursos JSON. Revisar: {listing}")
-        feeds[name] = {"url": res[0]["url"], "resource_id": res[0].get("id"),
-                       "last_modified": res[0].get("last_modified")}
+        pkg = None
+        try:
+            payload = json.loads(http_get(f"{CKAN}/package_show?id={ds}")[1])
+            if payload.get("success"):
+                pkg = payload["result"]
+        except Exception as e:  # noqa: BLE001
+            print(f"[CKAN] package_show {ds} falló: {e}", file=sys.stderr)
+        if pkg is None:
+            q = urllib.parse.quote("ubicacion vehiculos" if name == "cercanias" else "posicion vehiculos")
+            payload = json.loads(http_get(f"{CKAN}/package_search?q={q}&rows=20")[1])
+            cands = [p for p in payload.get("result", {}).get("results", []) if _json_resources(p)]
+            print(f"[CKAN] candidatos para {name}: {[p['name'] for p in cands]}", file=sys.stderr)
+            pkg = cands[0] if cands else None
+        if pkg is None:
+            raise RuntimeError(f"No encuentro el dataset de {name} en CKAN")
+        res = _json_resources(pkg)
+        pref = [r for r in res if "vehicle" in r["url"].lower() or "posicion" in r["url"].lower()
+                or "ubicacion" in r["url"].lower()] or res
+        print(f"[CKAN] {name}: dataset={pkg.get('name')} recursos JSON="
+              f"{[(r.get('name'), r['url']) for r in res]}", file=sys.stderr)
+        if len(pref) != 1:
+            raise RuntimeError(f"{pkg.get('name')}: {len(pref)} recursos JSON candidatos, revisar log")
+        r = pref[0]
+        feeds[name] = {"url": r["url"], "dataset": pkg.get("name"), "resource_id": r.get("id"),
+                       "resource_name": r.get("name"), "last_modified": r.get("last_modified"),
+                       "license": pkg.get("license_title"), "organization": (pkg.get("organization") or {}).get("title")}
     return feeds
 
 
@@ -104,6 +129,11 @@ def parse_gtfsrt_json(doc: dict) -> tuple[datetime | None, list[dict]]:
             "lon": g(pos, "longitude"),
             "ts": to_dt(g(v, "timestamp")),
             "status": g(v, "currentStatus", "current_status"),
+            "direction_id": g(trip, "directionId", "direction_id"),
+            "route_id": g(trip, "routeId", "route_id"),
+            "bearing": g(pos, "bearing"),
+            "speed": g(pos, "speed"),
+            "stop_id": g(v, "stopId", "stop_id"),
         })
     return header_ts, out
 
@@ -192,11 +222,37 @@ class Tracker:
 
 
 # ---------------------------------------------------------------- Bucle
-def poll(feeds, duration_s, interval_s, out: Path, trackers, errors):
+TRACK_COLS = ["feed", "vehicle_id", "entity_id", "label", "trip_id", "route_id", "direction_id",
+              "ts", "lat", "lon", "bearing", "speed", "status", "stop_id", "polled_at", "raw_sha256"]
+
+
+def poll(feeds, duration_s, interval_s, out: Path, trackers, errors, raw_every=1):
+    import csv
     samples = out / "samples.jsonl"
     end = time.monotonic() + duration_s
     raw_hashes = defaultdict(set)
+    seen = defaultdict(set)             # feed -> {(vehicle, ts)}: una fila por posición nueva
+    new_bodies = defaultdict(int)
+    tp = out / "tracks.csv.gz"
+    fresh_file = not tp.exists()
+    tracks_f = gzip.open(tp, "at", newline="")
+    tw = csv.writer(tracks_f)
+    if fresh_file:
+        tw.writerow(TRACK_COLS)
+    n_poll = 0
+    try:
+        _loop(locals())
+    finally:
+        tracks_f.close()
+
+
+def _loop(L):
+    feeds, end, interval_s, out = L["feeds"], L["end"], L["interval_s"], L["out"]
+    trackers, errors, raw_every, samples = L["trackers"], L["errors"], L["raw_every"], L["samples"]
+    raw_hashes, seen, new_bodies, tw, tracks_f = L["raw_hashes"], L["seen"], L["new_bodies"], L["tw"], L["tracks_f"]
+    n_poll = 0
     while time.monotonic() < end:
+        n_poll += 1
         t0 = time.monotonic()
         for name, meta in feeds.items():
             now = datetime.now(timezone.utc)
@@ -205,13 +261,31 @@ def poll(feeds, duration_s, interval_s, out: Path, trackers, errors):
                 status, body, headers = http_get(meta["url"])
                 rec["http"] = status
                 h = hashlib.sha256(body).hexdigest()
+                rec["raw_sha256"] = h
+                rec["bytes"] = len(body)
+                rec["final_url"] = headers.get("_final_url")
+                rec["server_date"] = headers.get("Date")
                 rec["raw_unchanged"] = h in raw_hashes[name]
                 raw_hashes[name].add(h)
-                d = out / "raw" / name
-                d.mkdir(parents=True, exist_ok=True)
-                (d / f"{now:%Y%m%dT%H%M%S}.json.gz").write_bytes(gzip.compress(body))
                 header_ts, vehicles = parse_gtfsrt_json(json.loads(body))
+                if not rec["raw_unchanged"]:
+                    new_bodies[name] += 1
+                    if new_bodies[name] % raw_every == 1 or raw_every == 1:
+                        d = out / "raw" / name
+                        d.mkdir(parents=True, exist_ok=True)
+                        (d / f"{now:%Y%m%dT%H%M%S}_{h[:12]}.json.gz").write_bytes(gzip.compress(body))
+                    for v in vehicles:
+                        k = (v["vehicle_id"] or v["entity_id"], v["ts"])
+                        if v["ts"] is None or k in seen[name]:
+                            continue
+                        seen[name].add(k)
+                        tw.writerow([name, v["vehicle_id"], v["entity_id"], v["label"], v["trip_id"],
+                                     v["route_id"], v["direction_id"], v["ts"].isoformat(), v["lat"],
+                                     v["lon"], v["bearing"], v["speed"], v["status"], v["stop_id"],
+                                     now.isoformat(), h])
+                    tracks_f.flush()
                 rec.update(analyze(header_ts, vehicles, now))
+                rec["header_ts"] = header_ts.isoformat() if header_ts else None
                 rec["last_modified_hdr"] = headers.get("Last-Modified")
                 trackers[name].feed(vehicles)
             except Exception as e:  # noqa: BLE001 — auditoría: registrar todo
@@ -219,7 +293,8 @@ def poll(feeds, duration_s, interval_s, out: Path, trackers, errors):
                 errors[name].append(rec["polled_at"])
             with samples.open("a") as f:
                 f.write(json.dumps(rec, default=str) + "\n")
-            print(json.dumps(rec, default=str), flush=True)
+            if n_poll <= 3 or n_poll % 30 == 0 or "error" in rec:
+                print(json.dumps(rec, default=str), flush=True)
         time.sleep(max(0, interval_s - (time.monotonic() - t0)))
 
 
@@ -264,6 +339,8 @@ def main():
     ap.add_argument("--minutes", type=float, default=0)
     ap.add_argument("--interval", type=int, default=15)
     ap.add_argument("--out", default="audit_out")
+    ap.add_argument("--raw-every", type=int, default=1,
+                    help="guardar 1 de cada N respuestas originales nuevas (todas quedan hasheadas)")
     ap.add_argument("--url", action="append", default=[],
                     help="feed=url para saltar CKAN (repetible)")
     a = ap.parse_args()
@@ -278,7 +355,7 @@ def main():
     print(f"Feeds: {json.dumps(feeds, indent=2)}", file=sys.stderr)
     trackers, errors = {k: Tracker() for k in feeds}, defaultdict(list)
     try:
-        poll(feeds, duration, a.interval, out, trackers, errors)
+        poll(feeds, duration, a.interval, out, trackers, errors, a.raw_every)
     except KeyboardInterrupt:
         print("Interrumpido; generando informe parcial…", file=sys.stderr)
     report(feeds, trackers, errors, out)
