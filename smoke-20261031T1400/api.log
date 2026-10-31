@@ -1,0 +1,88 @@
+INFO:     Started server process [3083]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56328 - "GET /api/v1/trains/live HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56342 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56350 - "GET /api/v1/sources HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56352 - "GET /api/v1/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56358 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56358 - "GET /style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46258 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46258 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56358 - "GET /api/v1/trains/live HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56358 - "GET /api/v1/sources HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56358 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49786 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57258 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37412 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+  |     result = await app(  # type: ignore[func-returns-value]
+  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+  |     return await self.app(scope, receive, send)
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/fastapi/applications.py", line 1054, in __call__
+  |     await super().__call__(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/applications.py", line 113, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/middleware/errors.py", line 187, in __call__
+  |     raise exc
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/middleware/errors.py", line 165, in __call__
+  |     await self.app(scope, receive, _send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/routing.py", line 715, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/routing.py", line 735, in app
+  |     await route.handle(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/routing.py", line 288, in handle
+  |     await self.app(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/routing.py", line 76, in app
+  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/routing.py", line 74, in app
+  |     await response(scope, receive, send)
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/responses.py", line 252, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 847, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/home/runner/work/HomeJoy257/HomeJoy257/railradar/backend/railradar/api.py", line 159, in gen
+    |     done, _ = await asyncio.wait({nxt}, timeout=15)
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/asyncio/tasks.py", line 464, in wait
+    |     return await _wait(fs, timeout, return_when, loop)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/asyncio/tasks.py", line 550, in _wait
+    |     await waiter
+    | asyncio.exceptions.CancelledError: Cancelled via cancel scope 7ff6ee443bb0 by <Task pending name='Task-43' coro=<RequestResponseCycle.run_asgi() running at /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py:409> cb=[set.discard()]>
+    | 
+    | During handling of the above exception, another exception occurred:
+    | 
+    | Traceback (most recent call last):
+    |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/anyio/_core/_tasks.py", line 327, in _run_coro
+    |     retval = await self._coro
+    |              ^^^^^^^^^^^^^^^^
+    |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/responses.py", line 255, in wrap
+    |     await func()
+    |   File "/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/starlette/responses.py", line 244, in stream_response
+    |     async for chunk in self.body_iterator:
+    |   File "/home/runner/work/HomeJoy257/HomeJoy257/railradar/backend/railradar/api.py", line 168, in gen
+    |     await sub.aclose()
+    | RuntimeError: aclose(): asynchronous generator is already running
+    +------------------------------------
