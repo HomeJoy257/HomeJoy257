@@ -1,0 +1,5 @@
+file,sha256,bytes,hash_matches_log
+art/part-1/part-1/raw/cercanias/20261031T131637_3e0c25f4403f.json.gz,3e0c25f4403f37eb5c9209a9598e113c9fc40a6820182c34c7170c2cb5cd4d3a,107071,True
+art/part-1/part-1/raw/cercanias/20261031T132627_a6710f0e2231.json.gz,a6710f0e22315956d605a0666eac9b6ddcc4573af7b3b9a7db5fef2e69b21171,111013,True
+art/part-1/part-1/raw/larga_distancia/20261031T131638_0a90a4018d74.json.gz,0a90a4018d74e621b53522373dbdcc9d2088ef569e0df7fb609e8ecaedc57271,45402,True
+art/part-1/part-1/raw/larga_distancia/20261031T132358_bf51b823438b.json.gz,bf51b823438b7b27a6f8a6874a7ccd2e2782feb0a9a71a6ec02a21a891604f89,43471,True
