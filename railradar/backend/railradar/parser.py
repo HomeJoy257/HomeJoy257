@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 
 from pydantic import ValidationError
 
-from .config import TRUST_TS_EQUAL_HEADER
 from .model import RealTrainPosition
 
 
@@ -25,18 +24,12 @@ def _ts(v) -> datetime | None:
         return None
 
 
-def parse_vehicle_positions(doc: dict, source: str,
-                            trust_header_ts: bool = TRUST_TS_EQUAL_HEADER
+def parse_vehicle_positions(doc: dict, source: str, seen_at: datetime | None = None
                             ) -> tuple[list[RealTrainPosition], dict]:
-    """Devuelve posiciones y contadores de descarte de parseo.
-
-    Regla: solo se usa el timestamp del VEHÍCULO. Si falta, o es idéntico al
-    de la cabecera (indicio de que es la hora de generación del fichero),
-    la posición se descarta: no podemos garantizar su antigüedad.
-    """
-    header_ts = _ts(_g(_g(doc, "header") or {}, "timestamp"))
-    out, stats = [], {"no_vehicle": 0, "no_position": 0, "no_ts": 0,
-                      "ts_is_header": 0, "no_id": 0, "invalid": 0}
+    """GTFS-RT JSON -> posiciones (sin decidir aún la edad: eso lo hace el colector
+    comparando con la coordenada anterior). Solo coordenadas publicadas por el feed."""
+    seen_at = seen_at or datetime.now(timezone.utc)
+    out, stats = [], {"no_vehicle": 0, "no_position": 0, "no_id": 0, "invalid": 0, "no_vehicle_ts": 0}
     for ent in _g(doc, "entity") or []:
         v = _g(ent, "vehicle")
         if not v:
@@ -46,31 +39,23 @@ def parse_vehicle_positions(doc: dict, source: str,
         if not pos or _g(pos, "latitude") is None or _g(pos, "longitude") is None:
             stats["no_position"] += 1
             continue
-        ts = _ts(_g(v, "timestamp"))
-        if ts is None:
-            stats["no_ts"] += 1
-            continue
-        if not trust_header_ts and header_ts is not None and ts == header_ts:
-            stats["ts_is_header"] += 1
-            continue
         veh = _g(v, "vehicle") or {}
         trip = _g(v, "trip") or {}
         ext_id = _g(veh, "id") or _g(veh, "label") or _g(ent, "id")
         if not ext_id:
             stats["no_id"] += 1
             continue
+        ts = _ts(_g(v, "timestamp"))
+        stats["no_vehicle_ts"] += ts is None
         try:
             out.append(RealTrainPosition(
-                source=source,
-                external_id=str(ext_id),
-                observed_at=ts,
-                latitude=float(_g(pos, "latitude")),
-                longitude=float(_g(pos, "longitude")),
-                trip_id=_g(trip, "tripId", "trip_id"),
-                route_id=_g(trip, "routeId", "route_id"),
-                label=_g(veh, "label"),
-                speed_mps=_g(pos, "speed"),
-                bearing=_g(pos, "bearing"),
+                source=source, external_id=str(ext_id),
+                latitude=float(_g(pos, "latitude")), longitude=float(_g(pos, "longitude")),
+                seen_at=seen_at, feed_ts=ts,
+                trip_id=_g(trip, "tripId", "trip_id"), route_id=_g(trip, "routeId", "route_id"),
+                label=_g(veh, "label"), status=_g(v, "currentStatus", "current_status"),
+                stop_id=_g(v, "stopId", "stop_id"),
+                speed_mps=_g(pos, "speed"), bearing=_g(pos, "bearing"),
             ))
         except (ValidationError, TypeError, ValueError):
             stats["invalid"] += 1

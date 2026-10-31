@@ -1,13 +1,13 @@
 """Estado en directo. Redis en producción, memoria en desarrollo/tests.
 
-Cada tren activo caduca solo cuando su observed_at supera 120 s.
+Cada tren se retira si deja de aparecer en el feed (PRESENCE_TTL_S).
 """
 import asyncio
 import json
 import time
 from datetime import datetime, timezone
 
-from .config import MAX_AGE_SECONDS
+from .config import PRESENCE_TTL_S
 from .model import RealTrainPosition
 
 CHANNEL = "railradar:events"
@@ -16,7 +16,8 @@ SOURCES_KEY = "railradar:sources"
 
 
 def _ttl(p: RealTrainPosition) -> int:
-    return int(MAX_AGE_SECONDS - (time.time() - p.observed_at.timestamp()))
+    """El tren se retira si deja de aparecer en el feed durante PRESENCE_TTL_S."""
+    return int(PRESENCE_TTL_S - (time.time() - p.seen_at.timestamp()))
 
 
 class MemoryStore:
@@ -24,6 +25,7 @@ class MemoryStore:
         self._live: dict[str, tuple[float, str]] = {}   # key -> (expires_at, json)
         self._sources: dict[str, str] = {}
         self._subs: set[asyncio.Queue] = set()
+        self._h: dict[str, dict[str, str]] = {}
 
     async def upsert(self, p: RealTrainPosition) -> bool:
         ttl = _ttl(p)
@@ -31,8 +33,8 @@ class MemoryStore:
             return False
         key = f"{p.source}:{p.external_id}"
         cur = self._live.get(key)
-        if cur and RealTrainPosition.model_validate_json(cur[1]).observed_at >= p.observed_at:
-            return False                                # mismo dato o más viejo
+        if cur and RealTrainPosition.model_validate_json(cur[1]).seen_at > p.seen_at:
+            return False                                # no retroceder
         self._live[key] = (time.time() + ttl, p.model_dump_json())
         return True
 
@@ -66,6 +68,20 @@ class MemoryStore:
     async def ping(self) -> bool:
         return True
 
+    # --- hashes genéricos (estaciones, eventos, retrasos)
+    async def hset_many(self, key: str, mapping: dict):
+        self._h.setdefault(key, {}).update({k: json.dumps(v, default=str) for k, v in mapping.items()})
+
+    async def hgetall(self, key: str) -> dict:
+        return {k: json.loads(v) for k, v in self._h.get(key, {}).items()}
+
+    async def hdel(self, key: str, *fields):
+        for f in fields:
+            self._h.get(key, {}).pop(f, None)
+
+    async def replace_hash(self, key: str, mapping: dict):
+        self._h[key] = {k: json.dumps(v, default=str) for k, v in mapping.items()}
+
 
 class RedisStore:
     # Lua: solo escribe si la posición es más nueva que la guardada.
@@ -73,7 +89,7 @@ class RedisStore:
     local cur = redis.call('GET', KEYS[1])
     if cur then
       local ok, obj = pcall(cjson.decode, cur)
-      if ok and tonumber(obj['t']) >= tonumber(ARGV[2]) then return 0 end
+      if ok and tonumber(obj['t']) > tonumber(ARGV[2]) then return 0 end
     end
     redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[3])
     return 1
@@ -89,7 +105,7 @@ class RedisStore:
         if ttl <= 0:
             return False
         key = f"{PREFIX}{p.source}:{p.external_id}"
-        t = p.observed_at.timestamp()
+        t = p.seen_at.timestamp()
         data = json.dumps({"t": t, "p": p.model_dump(mode="json")})
         return bool(await self._upsert(keys=[key], args=[data, t, ttl]))
 
@@ -126,6 +142,24 @@ class RedisStore:
         except Exception:
             return False
 
+    async def hset_many(self, key: str, mapping: dict):
+        if mapping:
+            await self.r.hset(key, mapping={k: json.dumps(v, default=str) for k, v in mapping.items()})
+
+    async def hgetall(self, key: str) -> dict:
+        return {k: json.loads(v) for k, v in (await self.r.hgetall(key)).items()}
+
+    async def hdel(self, key: str, *fields):
+        if fields:
+            await self.r.hdel(key, *fields)
+
+    async def replace_hash(self, key: str, mapping: dict):
+        pipe = self.r.pipeline()
+        pipe.delete(key)
+        if mapping:
+            pipe.hset(key, mapping={k: json.dumps(v, default=str) for k, v in mapping.items()})
+        await pipe.execute()
+
 
 def make_store(url: str | None):
     return RedisStore(url) if url else MemoryStore()
@@ -133,3 +167,7 @@ def make_store(url: str | None):
 
 def utcnow_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+STATIONS_KEY = "railradar:stations"
+EVENTS_KEY = "railradar:station_events"
+DELAYS_KEY = "railradar:delays"

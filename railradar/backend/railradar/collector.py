@@ -6,14 +6,17 @@ import asyncio
 import logging
 import time
 from collections import Counter
+from datetime import datetime, timezone
 
 import httpx
 
 from .ckan import resolve_feed
-from .config import CKAN_REFRESH_S, FEEDS, REDIS_URL
-from .model import age_seconds, rejection_reason
+from .config import (CKAN_REFRESH_S, FEED_POLICY, FEEDS, REDIS_URL, STATION_EVENT_TTL_S,
+                     STATIONS_ENABLED, TRIP_UPDATE_FEEDS)
+from .model import age_seconds, classify
 from .parser import parse_vehicle_positions
-from .store import make_store, utcnow_iso
+from .stations import load_stations, parse_trip_updates
+from .store import DELAYS_KEY, EVENTS_KEY, STATIONS_KEY, make_store, utcnow_iso
 
 log = logging.getLogger("railradar.collector")
 
@@ -31,6 +34,10 @@ class FeedWorker:
         self.last_body_hash = None
         self.resolved_at = 0.0
         self.consecutive_errors = 0
+        self.policy = FEED_POLICY.get(name, "strict")
+        # id -> (lat, lon, coord_since|None). coord_since=None: coordenada vista desde
+        # el arranque sin cambiar aún -> edad desconocida (no la inventamos)
+        self.coords: dict[str, tuple[float, float, datetime | None]] = {}
 
     async def _resolve(self):
         if self.url and time.monotonic() - self.resolved_at < CKAN_REFRESH_S:
@@ -68,30 +75,57 @@ class FeedWorker:
         return max(1.0, self.period - 1.5)
 
     async def _process(self, doc: dict):
-        positions, parse_stats = parse_vehicle_positions(doc, self.name)
-        rejected = Counter()
-        accepted = 0
+        now = datetime.now(timezone.utc)
+        positions, parse_stats = parse_vehicle_positions(doc, self.name, seen_at=now)
+        counts = Counter()
         ages = []
+        present = set()
+        events = {}
+        first_load = not self.coords
         for p in positions:
-            reason = rejection_reason(p)
-            if reason:
-                rejected[reason] += 1
+            present.add(p.external_id)
+            prev = self.coords.get(p.external_id)
+            if prev and (prev[0], prev[1]) == (p.latitude, p.longitude):
+                since = prev[2]                              # misma coordenada
+            elif prev is None and first_load:
+                since = None                                 # arranque: edad desconocida
+            else:
+                since = now                                  # coordenada nueva vista ahora
+            self.coords[p.external_id] = (p.latitude, p.longitude, since)
+            p.coord_since = since
+            cls = classify(p, self.policy, now)
+            if cls is None:
+                counts["hidden"] += 1
                 continue
-            if await self.store.upsert(p):
-                accepted += 1
-                ages.append(age_seconds(p))
-                await self.store.publish("train.position", p.model_dump(mode="json"))
+            p.age_class = cls
+            counts[cls] += 1
+            if since is not None and since == now:
+                counts["new_coord"] += 1
+            a = age_seconds(p, now)
+            if a is not None:
+                ages.append(a)
+            await self.store.upsert(p)
+            await self.store.publish("train.position", p.model_dump(mode="json"))
+            # Evento real: Renfe dice que el tren está en / llegando a una estación
+            if p.stop_id and p.status in ("STOPPED_AT", "INCOMING_AT"):
+                events[f"{p.stop_id}|{p.source}:{p.external_id}"] = {
+                    "stop_id": p.stop_id, "train": f"{p.source}:{p.external_id}",
+                    "label": p.label, "trip_id": p.trip_id, "status": p.status,
+                    "source": p.source, "operator": "Renfe", "seen_at": now.isoformat()}
+        if events:
+            await self.store.hset_many(EVENTS_KEY, events)
+        for gone in set(self.coords) - present:              # trenes que salen del feed
+            del self.coords[gone]
         status = {
-            "source": self.name, "status": "healthy", "url": self.url,
-            "last_success_at": utcnow_iso(), "publish_period_s": round(self.period, 1),
-            "entities": len(doc.get("entity") or []), "new_positions": accepted,
-            "rejected": dict(rejected), "parse_dropped": {k: v for k, v in parse_stats.items() if v},
+            "source": self.name, "status": "healthy", "url": self.url, "policy": self.policy,
+            "last_success_at": now.isoformat(), "publish_period_s": round(self.period, 1),
+            "entities": len(doc.get("entity") or []), **dict(counts),
+            "parse_dropped": {k: v for k, v in parse_stats.items() if v},
             "median_age_s": round(sorted(ages)[len(ages) // 2], 1) if ages else None,
         }
         await self.store.set_source(self.name, status)
         await self.store.publish("source.status", status)
-        log.info("%s: %d nuevas, rechazadas=%s, descartes=%s",
-                 self.name, accepted, dict(rejected), status["parse_dropped"])
+        log.info("%s: %s descartes=%s", self.name, dict(counts), status["parse_dropped"])
 
     async def run(self):
         while True:
@@ -111,12 +145,53 @@ class FeedWorker:
             await asyncio.sleep(wait)
 
 
+class TripUpdatesWorker:
+    """Retrasos oficiales de Renfe (GTFS-RT TripUpdates)."""
+
+    def __init__(self, name, ref, store, client, period=30.0):
+        self.name, self.ref, self.store, self.c, self.period = name, ref, store, client, period
+        self.url = None
+
+    async def run(self):
+        errors = 0
+        while True:
+            try:
+                if not self.url:
+                    self.url = (await resolve_feed(self.c, self.ref))["url"]
+                r = await self.c.get(self.url)
+                r.raise_for_status()
+                delays = parse_trip_updates(r.json())
+                await self.store.replace_hash(f"{DELAYS_KEY}:{self.name}", delays)
+                log.info("retrasos %s: %d viajes", self.name, len(delays))
+                errors = 0
+            except Exception as e:  # noqa: BLE001
+                errors += 1
+                self.url = None if errors > 3 else self.url
+                log.warning("trip_updates %s: %s", self.name, e)
+            await asyncio.sleep(self.period if not errors else min(120, 5 * errors))
+
+
+async def prune_events(store):
+    while True:
+        await asyncio.sleep(60)
+        now = datetime.now(timezone.utc).timestamp()
+        ev = await store.hgetall(EVENTS_KEY)
+        old = [k for k, v in ev.items()
+               if now - datetime.fromisoformat(v["seen_at"]).timestamp() > STATION_EVENT_TTL_S]
+        await store.hdel(EVENTS_KEY, *old)
+
+
 async def run_collector(store=None):
     store = store or make_store(REDIS_URL)
     async with httpx.AsyncClient(timeout=15, follow_redirects=True,
                                  headers={"User-Agent": "RailRadar/0.1"}) as client:
-        workers = [FeedWorker(n, ref, store, client) for n, ref in FEEDS]
-        await asyncio.gather(*(w.run() for w in workers))
+        tasks = [FeedWorker(n, ref, store, client).run() for n, ref in FEEDS]
+        if STATIONS_ENABLED:
+            stations = await load_stations(client)
+            await store.replace_hash(STATIONS_KEY, stations)
+            tasks += [TripUpdatesWorker(n, ref, store, client).run() for n, ref in TRIP_UPDATE_FEEDS]
+            tasks.append(prune_events(store))
+        await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":

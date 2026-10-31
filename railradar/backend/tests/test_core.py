@@ -3,84 +3,117 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from railradar.model import RealTrainPosition, rejection_reason
+from railradar.collector import FeedWorker
+from railradar.model import FRESH, UNKNOWN, RealTrainPosition, classify
 from railradar.parser import parse_vehicle_positions
-from railradar.store import MemoryStore
+from railradar.stations import parse_stops, parse_trip_updates
+from railradar.store import EVENTS_KEY, STATIONS_KEY, MemoryStore
 
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
 
 
-def pos(age=10, lat=40.4, lon=-3.7, ext="V1"):
-    return RealTrainPosition(source="t", external_id=ext, observed_at=NOW - timedelta(seconds=age),
-                             latitude=lat, longitude=lon)
+def pos(since_age=10, lat=40.4, lon=-3.7, ext="V1", status=None, unknown=False):
+    return RealTrainPosition(source="t", external_id=ext, latitude=lat, longitude=lon, seen_at=NOW,
+                             coord_since=None if unknown else NOW - timedelta(seconds=since_age), status=status)
 
 
-@pytest.mark.parametrize("p,reason", [
-    (pos(10), None), (pos(120), None), (pos(121), "stale"), (pos(-30), "future"),
-    (pos(lat=0, lon=0), "null_island"), (pos(lat=48.8, lon=2.3), "out_of_bbox"),
+@pytest.mark.parametrize("p,policy,expected", [
+    (pos(10), "strict", FRESH),
+    (pos(120), "strict", FRESH),
+    (pos(121), "strict", None),                        # coordenada sin cambiar >120 s
+    (pos(600, status="STOPPED_AT"), "strict", FRESH),  # parado en estación según Renfe
+    (pos(unknown=True), "strict", None),               # edad desconocida: no se muestra
+    (pos(unknown=True), "unknown_age", UNKNOWN),       # LD: gris
+    (pos(900), "unknown_age", UNKNOWN),
+    (pos(5), "unknown_age", UNKNOWN),                  # aunque cambie, sin hora del feed: gris
+    (pos(lat=0, lon=0), "unknown_age", None),
+    (pos(lat=48.8, lon=2.3), "strict", None),
 ])
-def test_rejection(p, reason):
-    assert rejection_reason(p, NOW) == reason
+def test_classify(p, policy, expected):
+    assert classify(p, policy, NOW) == expected
 
 
 def test_naive_datetime_rejected():
     with pytest.raises(Exception):
-        RealTrainPosition(source="t", external_id="x", observed_at=datetime.now(), latitude=40, longitude=-3)
+        RealTrainPosition(source="t", external_id="x", latitude=40, longitude=-3, seen_at=datetime.now())
 
 
-def ent(vid, ts, lat=40.4, lon=-3.7):
-    v = {"vehicle": {"id": vid}, "position": {"latitude": lat, "longitude": lon}}
-    if ts is not None:
-        v["timestamp"] = str(ts)
-    return {"id": vid, "vehicle": v}
+def test_parser_accepts_missing_vehicle_ts():
+    doc = {"header": {"timestamp": "1"}, "entity": [
+        {"id": "1", "vehicle": {"vehicle": {"id": "A"}, "position": {"latitude": 40, "longitude": -3},
+                                "currentStatus": "STOPPED_AT", "stopId": "60000"}},
+        {"id": "2", "vehicle": {"vehicle": {"id": "B"}, "position": {"latitude": 41, "longitude": 2},
+                                "timestamp": str(int(NOW.timestamp()))}},
+        {"id": "x", "tripUpdate": {}}]}
+    ps, st = parse_vehicle_positions(doc, "t", NOW)
+    assert [p.external_id for p in ps] == ["A", "B"]
+    assert ps[0].feed_ts is None and ps[0].status == "STOPPED_AT" and ps[0].stop_id == "60000"
+    assert st["no_vehicle"] == 1 and st["no_vehicle_ts"] == 1
 
 
-def test_parser_uses_vehicle_ts_and_drops_header_ts():
-    h = int(NOW.timestamp())
-    doc = {"header": {"timestamp": str(h)},
-           "entity": [ent("A", h - 10), ent("B", None), ent("C", h), {"id": "x", "tripUpdate": {}}]}
-    ps, st = parse_vehicle_positions(doc, "t", trust_header_ts=False)
-    assert [p.external_id for p in ps] == ["A"]
-    assert st["no_ts"] == 1 and st["ts_is_header"] == 1 and st["no_vehicle"] == 1
-    ps, _ = parse_vehicle_positions(doc, "t", trust_header_ts=True)
-    assert {p.external_id for p in ps} == {"A", "C"}
+async def test_collector_measures_age_from_coordinate_change():
+    store = MemoryStore()
+    w = FeedWorker("renfe_cercanias", "http://x", store, client=None)
+    w.policy = "strict"
+
+    def doc(lat):
+        return {"entity": [{"id": "1", "vehicle": {"vehicle": {"id": "A"}, "timestamp": "1",
+                                                   "position": {"latitude": lat, "longitude": -3.7}}}]}
+    await w._process(doc(40.40))                 # arranque: edad desconocida -> oculto
+    assert await store.snapshot() == []
+    await w._process(doc(40.40))                 # misma coordenada: sigue desconocida
+    assert await store.snapshot() == []
+    await w._process(doc(40.41))                 # cambia: ahora sí sabemos su edad
+    snap = await store.snapshot()
+    assert len(snap) == 1 and snap[0].age_class == FRESH and snap[0].coord_since is not None
 
 
-def test_parser_snake_case():
-    doc = {"entity": [{"id": "1", "vehicle": {"vehicle": {"id": "S"}, "trip": {"trip_id": "T9"},
-                                              "position": {"latitude": 41, "longitude": 2},
-                                              "timestamp": int(NOW.timestamp()) - 5}}]}
-    ps, _ = parse_vehicle_positions(doc, "t")
-    assert ps[0].trip_id == "T9"
+async def test_ld_unknown_age_and_station_event():
+    store = MemoryStore()
+    w = FeedWorker("renfe_ld", "http://x", store, client=None)
+    w.policy = "unknown_age"
+    await w._process({"entity": [{"id": "1", "vehicle": {
+        "vehicle": {"id": "03063", "label": "AVE-03063"}, "trip": {"tripId": "03063D"},
+        "position": {"latitude": 40.4065, "longitude": -3.6896},
+        "currentStatus": "STOPPED_AT", "stopId": "60000"}}]})
+    snap = await store.snapshot()
+    assert snap[0].age_class == UNKNOWN
+    ev = await store.hgetall(EVENTS_KEY)
+    assert list(ev) == ["60000|renfe_ld:03063"]
 
 
-async def test_store_never_goes_back_in_time():
-    s = MemoryStore()
-    assert await s.upsert(pos(10))
-    assert not await s.upsert(pos(10))     # duplicado
-    assert not await s.upsert(pos(30))     # más viejo
-    assert await s.upsert(pos(2))          # más nuevo
-    assert not await s.upsert(pos(500))    # caducado
-    snap = await s.snapshot()
-    assert len(snap) == 1 and snap[0].observed_at == NOW - timedelta(seconds=2)
+def test_trip_updates_and_stops():
+    tu = parse_trip_updates({"entity": [
+        {"tripUpdate": {"trip": {"tripId": "T1"}, "delay": 300}},
+        {"tripUpdate": {"trip": {"tripId": "T2"}, "stopTimeUpdate": [{"stopId": "60000", "arrival": {"delay": 120}}]}}]})
+    assert tu["T1"]["delay_s"] == 300 and tu["T2"]["stops"]["60000"] == 120
+    import io, zipfile
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w") as z:
+        z.writestr("stops.txt", "﻿stop_id,stop_name,stop_lat,stop_lon\n60000,Atocha,40.4,-3.69\nbad,x,,\n")
+    assert parse_stops(b.getvalue()) == {"60000": {"name": "Atocha", "lat": 40.4, "lon": -3.69}}
 
 
-def test_api_serves_only_fresh():
+def test_api_layers():
+    import asyncio
     from railradar import api
     store = MemoryStore()
     api.app.state.store = store
+    fresh = pos(5, ext="fresh").model_copy(update={"source": "renfe_cercanias"})
+    old = pos(300, ext="old").model_copy(update={"source": "renfe_cercanias"})
+    gray = pos(unknown=True, ext="gray", lat=41).model_copy(update={"source": "renfe_ld", "trip_id": "X"})
+    for p in (fresh, old, gray):
+        asyncio.run(store.upsert(p))
+    asyncio.run(store.hset_many(f"railradar:delays:renfe_ld", {"X": {"delay_s": 240, "stops": {}}}))
+    asyncio.run(store.replace_hash(STATIONS_KEY, {"60000": {"name": "Atocha", "lat": 40.4, "lon": -3.69}}))
+    asyncio.run(store.hset_many(EVENTS_KEY, {"60000|renfe_ld:gray": {
+        "stop_id": "60000", "train": "renfe_ld:gray", "trip_id": "X", "status": "STOPPED_AT",
+        "source": "renfe_ld", "operator": "Renfe", "seen_at": NOW.isoformat()}}))
     with TestClient(api.app) as c:
-        import asyncio
-        asyncio.run(store.upsert(pos(5, ext="fresh")))
-        # forzamos uno caducado saltándonos el TTL del store
-        stale = pos(5, ext="stale")
-        asyncio.run(store.upsert(stale))
-        store._live["t:stale"] = (9e12, stale.model_copy(update={"observed_at": NOW - timedelta(seconds=300)}).model_dump_json())
-        j = c.get("/api/v1/trains/live").json()
-        ids = [f["properties"]["external_id"] for f in j["features"]]
-        assert ids == ["fresh"]
-        f = j["features"][0]
-        assert f["geometry"]["coordinates"] == [-3.7, 40.4]
-        assert f["properties"]["position_type"] == "reported_gps"
-        assert c.get("/api/v1/trains/t:stale").status_code == 404
+        feats = {f["properties"]["external_id"]: f["properties"] for f in c.get("/api/v1/trains/live").json()["features"]}
+        assert set(feats) == {"fresh", "gray"}                  # 'old' (300 s sin cambiar) fuera
+        assert feats["gray"]["age_class"] == "unknown_age" and feats["gray"]["age_seconds"] is None
+        assert feats["gray"]["delay_s"] == 240
+        st = c.get("/api/v1/stations/events").json()["features"]
+        assert st[0]["properties"]["name"] == "Atocha" and st[0]["properties"]["events"][0]["delay_s"] == 240
         assert c.get("/health/ready").status_code == 200

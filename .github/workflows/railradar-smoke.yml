@@ -1,0 +1,41 @@
+name: RailRadar · prueba con datos reales
+on:
+  push:
+    paths: ["railradar/smoke/run.json"]
+permissions:
+  contents: write
+concurrency: { group: railradar-smoke, cancel-in-progress: true }
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Instalar
+        run: |
+          pip install -q -r railradar/backend/requirements.txt
+          cd railradar/smoke && npm init -y >/dev/null && npm i -s playwright@1.48.2 && npx playwright install --with-deps chromium >/dev/null
+      - name: Arrancar RailRadar contra Renfe (real)
+        working-directory: railradar/backend
+        run: |
+          EMBEDDED_COLLECTOR=1 nohup python3 -m uvicorn railradar.api:app --port 8000 > ../../api.log 2>&1 &
+          sleep 240
+      - name: Capturar API y pantallas
+        run: |
+          mkdir -p smoke_out
+          for e in trains/live stations/events sources stats; do
+            curl -s localhost:8000/api/v1/$e > smoke_out/$(echo $e | tr / _).json; done
+          cd railradar/smoke && node shot.mjs ../../smoke_out | tee ../../smoke_out/shot_log.json
+          cd ../.. && cp api.log smoke_out/ && python3 -c "import json;print(json.dumps(json.load(open('smoke_out/stats.json')),indent=1))" >> $GITHUB_STEP_SUMMARY
+      - name: Publicar en railradar-data
+        run: |
+          RUN=smoke-$(date -u +%Y%m%dT%H%M)
+          git config user.name "railradar-bot"; git config user.email "railradar-bot@users.noreply.github.com"
+          mkdir -p /tmp/pub && cp -r smoke_out /tmp/pub/$RUN
+          git fetch origin railradar-data && git checkout -q -B railradar-data origin/railradar-data
+          cp -r /tmp/pub/$RUN . && git add $RUN && git commit -qm "Prueba real: $RUN"
+          for i in 1 2 3 4; do git pull -q --rebase origin railradar-data; git push origin railradar-data && break || sleep $((2**i)); done

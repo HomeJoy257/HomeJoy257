@@ -1,152 +1,184 @@
-// RailRadar — cliente. Sin interpolación: un punto solo se mueve cuando llega una coordenada nueva.
-const MAX_AGE = 120;
+// RailRadar — cliente. Sin interpolación: un punto solo se mueve cuando Renfe publica otra coordenada.
+const MAX_AGE = 120, PRESENCE_TTL = 90;
 const params = new URLSearchParams(location.search);
 const API = params.get("api") || "";
 const STYLE = params.get("style") || "https://tiles.openfreemap.org/styles/positron";
 const BLANK = { version: 8, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#dfe3e8" } }] };
+const COLORS = { fresh: "#14a44d", mid: "#e0a800", old: "#e8590c", gray: "#7b8594", station: "#6c2bd9" };
 
-const trains = new Map();      // id -> {props, coords, observedMs}
-let clockOffset = 0;           // serverNow - clientNow (ms)
-let maxAgeFilter = MAX_AGE;
-let selected = null;
+const trains = new Map();     // id -> {p, coords, seenMs, sinceMs|null}
+let stationsFC = { type: "FeatureCollection", features: [] };
+let clockOffset = 0, selected = null, selectedStation = null;
+const show = { ld: true, st: true, cer: false };
 const now = () => Date.now() + clockOffset;
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const isCer = (p) => p.source === "renfe_cercanias";
+const fmtDelay = (s) => s == null ? "" : s <= 60 ? `<span class="ontime">en hora</span>` : `<span class="late">+${Math.round(s / 60)} min</span>`;
+const ago = (sec) => sec < 90 ? `${Math.round(sec)} s` : `${Math.round(sec / 60)} min`;
 
-const map = new maplibregl.Map({ container: "map", style: STYLE, center: [-3.7, 40.2], zoom: 5.3, attributionControl: true });
+const map = new maplibregl.Map({ container: "map", style: STYLE, center: [-3.7, 40.2], zoom: 5.3 });
 map.addControl(new maplibregl.NavigationControl(), "top-right");
 let styleFailed = false;
-map.on("error", (e) => {  // si el estilo de teselas falla, fondo neutro para no perder los trenes
-  if (!styleFailed && !map.isStyleLoaded()) { styleFailed = true; map.setStyle(BLANK); }
-});
+map.on("error", () => { if (!styleFailed && !map.isStyleLoaded()) { styleFailed = true; map.setStyle(BLANK); } });
 
 function addLayers() {
   if (map.getSource("trains")) return;
-  map.addSource("trains", { type: "geojson", data: fc() });
-  map.addLayer({ id: "trains-halo", type: "circle", source: "trains",
-    paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 7, 12, 12], "circle-color": "#fff", "circle-opacity": 0.9 } });
+  map.addSource("stations", { type: "geojson", data: stationsFC });
+  map.addSource("trains", { type: "geojson", data: trainsFC() });
+  map.addLayer({ id: "stations", type: "circle", source: "stations",
+    paint: { "circle-radius": ["interpolate", ["linear"], ["get", "count"], 1, 10, 10, 18],
+             "circle-color": COLORS.station, "circle-opacity": 0.28, "circle-stroke-color": COLORS.station, "circle-stroke-width": 2.5 } });
+  map.addLayer({ id: "stations-count", type: "symbol", source: "stations", minzoom: 7,
+    layout: { "text-field": ["concat", ["get", "name"], " · ", ["to-string", ["get", "count"]]], "text-size": 11,
+              "text-offset": [0, 1.6], "text-anchor": "top", "text-optional": true },
+    paint: { "text-color": COLORS.station, "text-halo-color": "#fff", "text-halo-width": 1.5 } });
   map.addLayer({ id: "trains", type: "circle", source: "trains",
     paint: {
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 12, 9],
-      "circle-color": ["step", ["get", "age"], "#14a44d", 30, "#e0a800", 90, "#e8590c"],
-      "circle-stroke-width": ["case", ["boolean", ["feature-state", "sel"], false], 3, 0],
-      "circle-stroke-color": "#6c2bd9",
+      "circle-color": ["match", ["get", "cls"], "gray", COLORS.gray, "stopped", COLORS.fresh,
+        ["step", ["get", "age"], COLORS.fresh, 30, COLORS.mid, 90, COLORS.old]],
+      "circle-stroke-color": ["case", ["boolean", ["feature-state", "sel"], false], COLORS.station, "#fff"],
+      "circle-stroke-width": ["case", ["boolean", ["feature-state", "sel"], false], 3, 1.5],
     } });
-  if (!map.hasImage("arrow")) map.addImage("arrow", arrowIcon(), { pixelRatio: 2 });
-  map.addLayer({ id: "trains-dir", type: "symbol", source: "trains", filter: ["has", "bearing"],
-    layout: { "icon-image": "arrow", "icon-rotate": ["get", "bearing"], "icon-rotation-alignment": "map",
-              "icon-allow-overlap": true, "icon-ignore-placement": true } });
-  map.on("click", "trains", (e) => select(e.features[0].properties.id));
-  map.on("mouseenter", "trains", () => (map.getCanvas().style.cursor = "pointer"));
-  map.on("mouseleave", "trains", () => (map.getCanvas().style.cursor = ""));
+  map.on("click", "trains", (e) => selectTrain(e.features[0].properties.id));
+  map.on("click", "stations", (e) => { if (!map.queryRenderedFeatures(e.point, { layers: ["trains"] }).length) selectStation(e.features[0].properties.stop_id); });
+  for (const l of ["trains", "stations"]) {
+    map.on("mouseenter", l, () => (map.getCanvas().style.cursor = "pointer"));
+    map.on("mouseleave", l, () => (map.getCanvas().style.cursor = ""));
+  }
 }
 map.on("style.load", addLayers);
 
-// Flecha de rumbo (dato "bearing" del feed, nunca calculado)
-function arrowIcon() {
-  const c = document.createElement("canvas"); c.width = c.height = 48;
-  const g = c.getContext("2d");
-  g.fillStyle = "#14181f"; g.beginPath(); g.moveTo(24, 0); g.lineTo(31, 11); g.lineTo(17, 11); g.closePath(); g.fill();
-  return g.getImageData(0, 0, 48, 48);
-}
-
-function fc() {
-  const t = now(), features = [];
-  for (const [id, tr] of trains) {
-    const age = (t - tr.observedMs) / 1000;
-    if (age > MAX_AGE) { trains.delete(id); if (selected === id) select(null); continue; }   // caduca con reloj local
-    if (age > maxAgeFilter) continue;
-    const p = { id, age: Math.max(0, age) };
-    if (tr.props.bearing != null) p.bearing = tr.props.bearing;
-    features.push({ type: "Feature", id: hashId(id), geometry: { type: "Point", coordinates: tr.coords }, properties: p });
-  }
-  return { type: "FeatureCollection", features };
-}
 const hashId = (s) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
 
-function upsert(props, coords) {
-  const id = props.id || `${props.source}:${props.external_id}`;
-  const observedMs = Date.parse(props.observed_at);
+// Reglas en el cliente (por si se corta la conexión):
+//  - cualquier tren desaparece si no se ha visto en el feed en 90 s
+//  - Cercanías: desaparece si su coordenada lleva >120 s sin cambiar (salvo parado en estación)
+function classifyClient(tr, t) {
+  if ((t - tr.seenMs) / 1000 > PRESENCE_TTL) return null;
+  const age = tr.sinceMs != null ? (t - tr.sinceMs) / 1000 : null;
+  if (isCer(tr.p)) {
+    if (age != null && age <= MAX_AGE) return { cls: "fresh", age };
+    if (tr.p.status === "STOPPED_AT" && tr.sinceMs != null) return { cls: "stopped", age };
+    return null;
+  }
+  return { cls: "gray", age };      // AV/LD/MD: Renfe no publica la hora -> siempre gris
+}
+
+function trainsFC() {
+  const t = now(), features = [];
+  let nLd = 0, nCer = 0;
+  for (const [id, tr] of trains) {
+    const c = classifyClient(tr, t);
+    if (!c) { trains.delete(id); if (selected === id) selectTrain(null); continue; }
+    isCer(tr.p) ? nCer++ : nLd++;
+    if (isCer(tr.p) ? !show.cer : !show.ld) continue;
+    features.push({ type: "Feature", id: hashId(id), geometry: { type: "Point", coordinates: tr.coords },
+      properties: { id, cls: c.cls, age: c.age ?? 0 } });
+  }
+  $("k-ld").textContent = nLd; $("k-cer").textContent = nCer;
+  return { type: "FeatureCollection", features };
+}
+
+function upsert(p) {
+  const id = `${p.source}:${p.external_id}`;
+  const seenMs = Date.parse(p.seen_at);
   const cur = trains.get(id);
-  if (cur && cur.observedMs >= observedMs) return;   // nunca retroceder
-  trains.set(id, { props: { ...props, id }, coords, observedMs });
+  if (cur && cur.seenMs > seenMs) return;
+  trains.set(id, { p: { ...p, id }, coords: [p.longitude, p.latitude], seenMs, sinceMs: p.coord_since ? Date.parse(p.coord_since) : null });
 }
 
 function render() {
   const src = map.getSource("trains");
-  const data = fc();
-  if (src) src.setData(data);
-  $("k-visible").textContent = data.features.length;
-  if (selected) renderDetails();
+  if (src) src.setData(trainsFC()); else trainsFC();
+  const st = map.getSource("stations");
+  if (st) st.setData(show.st ? stationsFC : { type: "FeatureCollection", features: [] });
+  $("k-st").textContent = stationsFC.features.length;
+  if (selected) renderTrain();
 }
 
 async function snapshot() {
-  const r = await fetch(`${API}/api/v1/trains/live`, { cache: "no-store" });
-  const j = await r.json();
+  const j = await (await fetch(`${API}/api/v1/trains/live`, { cache: "no-store" })).json();
   clockOffset = Date.parse(j.generated_at) - Date.now();
   trains.clear();
-  for (const f of j.features) upsert(f.properties, f.geometry.coordinates);
+  for (const f of j.features) upsert({ ...f.properties, longitude: f.geometry.coordinates[0], latitude: f.geometry.coordinates[1] });
   render();
 }
-
-async function loadSources() {
+async function loadStations() {
   try {
-    const j = await (await fetch(`${API}/api/v1/sources`, { cache: "no-store" })).json();
-    renderSources(j.sources);
+    stationsFC = await (await fetch(`${API}/api/v1/stations/events`, { cache: "no-store" })).json();
+    render(); if (selectedStation) renderStation();
   } catch {}
 }
+async function loadSources() {
+  try { renderSources((await (await fetch(`${API}/api/v1/sources`, { cache: "no-store" })).json()).sources); } catch {}
+}
+
 const sourcesState = {};
 function renderSources(s) {
   Object.assign(sourcesState, s);
   const el = $("f-sources"); el.innerHTML = "";
-  let active = 0;
   for (const [name, st] of Object.entries(sourcesState)) {
-    const ok = st.status === "healthy"; if (ok) active++;
-    const last = st.last_success_at ? Math.round((now() - Date.parse(st.last_success_at)) / 1000) + " s" : "—";
+    const ok = st.status === "healthy";
+    const last = st.last_success_at ? ago((now() - Date.parse(st.last_success_at)) / 1000) : "—";
     const row = document.createElement("div"); row.className = "src";
-    row.innerHTML = `<span><i class="dot" style="background:${ok ? "var(--fresh)" : "var(--old)"}"></i>${name}</span>
-      <small>${ok ? `cada ~${st.publish_period_s ?? "?"} s · hace ${last}` : (st.error || "error").slice(0, 60)}</small>`;
+    row.innerHTML = `<span><i class="dot" style="background:${ok ? "var(--fresh)" : "var(--old)"}"></i>${esc(name)}</span>
+      <small>${ok ? `cada ~${st.publish_period_s ?? "?"} s · hace ${last}` : esc((st.error || "error").slice(0, 60))}</small>`;
     el.appendChild(row);
   }
-  $("k-sources").textContent = Object.keys(sourcesState).length ? `${active}/${Object.keys(sourcesState).length}` : "—";
 }
 
-function select(id) {
+function selectTrain(id) {
   if (selected && map.getSource("trains")) map.setFeatureState({ source: "trains", id: hashId(selected) }, { sel: false });
-  selected = id;
+  selected = id; selectedStation = null;
   if (id) map.setFeatureState({ source: "trains", id: hashId(id) }, { sel: true });
   $("details").hidden = !id;
-  if (id) renderDetails();
+  if (id) renderTrain();
 }
-function renderDetails() {
+function renderTrain() {
   const tr = trains.get(selected); if (!tr) return;
-  const p = tr.props, age = Math.round((now() - tr.observedMs) / 1000);
+  const p = tr.p, t = now(), c = classifyClient(tr, t) || {};
   $("d-id").textContent = p.label || p.external_id;
-  const rows = [["Fuente", p.source], ["Tipo", "GPS reportado"], ["Observado", new Date(tr.observedMs).toLocaleTimeString("es-ES")],
-    ["Antigüedad", `${age} s`], ["Viaje", p.trip_id], ["Línea", p.route_id],
-    ["Velocidad", p.speed_mps != null ? `${Math.round(p.speed_mps * 3.6)} km/h` : null],
-    ["Lat, Lon", `${tr.coords[1].toFixed(5)}, ${tr.coords[0].toFixed(5)}`]];
-  $("d-body").innerHTML = rows.filter(([, v]) => v != null && v !== "").map(([k, v]) => `<dt>${k}</dt><dd>${esc(String(v))}</dd>`).join("");
+  const ageTxt = tr.sinceMs == null
+    ? "Desconocida: Renfe no publica la hora y aún no la hemos visto cambiar"
+    : c.cls === "gray"
+      ? `Desconocida. La coordenada cambió por última vez hace ${ago((t - tr.sinceMs) / 1000)} (visto por RailRadar; Renfe no indica cuándo se tomó)`
+      : `${ago((t - tr.sinceMs) / 1000)} desde que cambió la coordenada (medido por RailRadar)`;
+  const rows = [["Operadora", "Renfe"], ["Fuente", p.source], ["Tipo", "GPS publicado por Renfe"],
+    ["Antigüedad", ageTxt], ["Estado", { STOPPED_AT: "Parado en estación", INCOMING_AT: "Llegando a estación", IN_TRANSIT_TO: "En marcha" }[p.status]],
+    ["Retraso oficial", p.delay_s != null ? (p.delay_s <= 60 ? "En hora" : `+${Math.round(p.delay_s / 60)} min`) : null],
+    ["Viaje", p.trip_id], ["Lat, Lon", `${tr.coords[1].toFixed(5)}, ${tr.coords[0].toFixed(5)}`]];
+  $("d-body").innerHTML = rows.filter(([, v]) => v != null && v !== "").map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
 }
-const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function selectStation(stopId) {
+  selectTrain(null); selectedStation = stopId;
+  $("details").hidden = !stopId; if (stopId) renderStation();
+}
+function renderStation() {
+  const f = stationsFC.features.find((x) => x.properties.stop_id === selectedStation); if (!f) return;
+  const p = f.properties, evs = typeof p.events === "string" ? JSON.parse(p.events) : p.events;
+  $("d-id").textContent = p.name;
+  $("d-body").innerHTML = `<dt>Trenes</dt><dd><ul class="evs">${evs.map((e) =>
+    `<li><span>${esc(e.label || e.train.split(":")[1])}<br><small>${e.status === "STOPPED_AT" ? "parado" : "llegando"} · hace ${e.minutes_ago} min</small></span>${fmtDelay(e.delay_s)}</li>`).join("")}</ul></dd>
+    <dt>Fuente</dt><dd>Renfe (estado del tren + retrasos oficiales)</dd>`;
+}
 
 function connect() {
-  const es = new EventSource(`${API}/api/v1/stream`);
-  const conn = $("conn");
+  const es = new EventSource(`${API}/api/v1/stream`), conn = $("conn");
   es.addEventListener("hello", async (e) => {
     clockOffset = Date.parse(JSON.parse(e.data).server_time) - Date.now();
     conn.textContent = "En directo"; conn.className = "pill on";
-    await snapshot();   // instantánea completa tras (re)conectar
-    loadSources();
+    await snapshot(); loadSources(); loadStations();
   });
-  es.addEventListener("train.position", (e) => {
-    const p = JSON.parse(e.data);
-    upsert(p, [p.longitude, p.latitude]);
-  });
+  es.addEventListener("train.position", (e) => upsert(JSON.parse(e.data)));
   es.addEventListener("source.status", (e) => { const s = JSON.parse(e.data); renderSources({ [s.source]: s }); });
   es.onerror = () => { conn.textContent = "Reconectando…"; conn.className = "pill off"; };
 }
 
-$("f-age").addEventListener("input", (e) => { maxAgeFilter = +e.target.value; $("o-age").textContent = maxAgeFilter; render(); });
-setInterval(render, 1000);    // recolorea por antigüedad y elimina caducados
+for (const k of ["ld", "st", "cer"]) $(`l-${k}`).addEventListener("change", (e) => { show[k] = e.target.checked; render(); });
+setInterval(render, 1000);
+setInterval(loadStations, 30000);
 setInterval(() => renderSources({}), 5000);
 connect();

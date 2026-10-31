@@ -4,3 +4,6 @@ __pycache__/
 audit_out/
 *.pyc
 dump.rdb
+.cache/
+node_modules/
+package*.json

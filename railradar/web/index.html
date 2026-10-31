@@ -15,29 +15,32 @@
     <div id="conn" class="pill off">Conectando…</div>
   </header>
   <section class="kpis">
-    <div><b id="k-visible">—</b><small>trenes con GPS</small></div>
-    <div><b id="k-sources">—</b><small>fuentes activas</small></div>
-    <div><b>120 s</b><small>antigüedad máx.</small></div>
+    <div><b id="k-ld">—</b><small>AVE/LD/MD</small></div>
+    <div><b id="k-cer">—</b><small>Cercanías</small></div>
+    <div><b id="k-st">—</b><small>estaciones</small></div>
   </section>
   <section>
-    <h2>Frescura del GPS</h2>
-    <div class="legend">
-      <span><i style="background:var(--fresh)"></i>0–30 s</span>
-      <span><i style="background:var(--mid)"></i>30–90 s</span>
-      <span><i style="background:var(--old)"></i>90–120 s</span>
-    </div>
-    <label class="range">Mostrar hasta <output id="o-age">120</output> s
-      <input id="f-age" type="range" min="15" max="120" step="5" value="120"></label>
+    <h2>Capas</h2>
+    <label class="layer"><input type="checkbox" id="l-ld" checked>
+      <i class="sw" style="background:var(--gray)"></i>AVE / Larga / Media Distancia
+      <small>GPS de Renfe · Renfe no publica la hora de la posición</small></label>
+    <label class="layer"><input type="checkbox" id="l-st" checked>
+      <i class="sw sq" style="background:var(--accent)"></i>Trenes en estación
+      <small>Renfe indica parado / llegando · con retraso oficial</small></label>
+    <label class="layer"><input type="checkbox" id="l-cer">
+      <i class="sw" style="background:var(--fresh)"></i>Cercanías
+      <small>GPS con edad medida ≤120 s (verde→naranja)</small></label>
   </section>
   <section>
     <h2>Fuentes</h2>
     <div id="f-sources"></div>
+    <p class="warn">Solo trenes de <b>Renfe</b>. Iryo y Ouigo no publican datos abiertos.</p>
   </section>
   <section id="details" hidden>
     <h2>Tren <span id="d-id"></span></h2>
     <dl id="d-body"></dl>
   </section>
-  <footer>Solo posiciones GPS reportadas por fuentes oficiales. Sin interpolación: si un tren no tiene posición de los últimos 120 s, no se muestra.</footer>
+  <footer>Datos abiertos de Renfe (CC BY 4.0). Solo posiciones publicadas por Renfe, sin interpolación ni ajuste a la vía. Herramienta informativa: <b>no apta para seguridad ferroviaria</b>.</footer>
 </aside>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="app.js"></script>
