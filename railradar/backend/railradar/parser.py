@@ -30,6 +30,7 @@ def parse_vehicle_positions(doc: dict, source: str, seen_at: datetime | None = N
     comparando con la coordenada anterior). Solo coordenadas publicadas por el feed."""
     seen_at = seen_at or datetime.now(timezone.utc)
     out, stats = [], {"no_vehicle": 0, "no_position": 0, "no_id": 0, "invalid": 0, "no_vehicle_ts": 0}
+    used = set()
     for ent in _g(doc, "entity") or []:
         v = _g(ent, "vehicle")
         if not v:
@@ -45,14 +46,19 @@ def parse_vehicle_positions(doc: dict, source: str, seen_at: datetime | None = N
         if not ext_id:
             stats["no_id"] += 1
             continue
+        ext_id = str(ext_id)
+        trip_id = _g(trip, "tripId", "trip_id")
+        if ext_id in used and trip_id:          # mismo nº de tren en varias entidades
+            ext_id = f"{ext_id}~{trip_id}"
+        used.add(ext_id)
         ts = _ts(_g(v, "timestamp"))
         stats["no_vehicle_ts"] += ts is None
         try:
             out.append(RealTrainPosition(
-                source=source, external_id=str(ext_id),
+                source=source, external_id=ext_id,
                 latitude=float(_g(pos, "latitude")), longitude=float(_g(pos, "longitude")),
                 seen_at=seen_at, feed_ts=ts,
-                trip_id=_g(trip, "tripId", "trip_id"), route_id=_g(trip, "routeId", "route_id"),
+                trip_id=trip_id, route_id=_g(trip, "routeId", "route_id"),
                 label=_g(veh, "label"), status=_g(v, "currentStatus", "current_status"),
                 stop_id=_g(v, "stopId", "stop_id"),
                 speed_mps=_g(pos, "speed"), bearing=_g(pos, "bearing"),

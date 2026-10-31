@@ -14,7 +14,7 @@ FEEDS = [
     tuple(x.split("=", 1))
     for x in os.getenv(
         "FEEDS",
-        "renfe_cercanias=ubicacion-vehiculos,renfe_ld=posicion-vehiculos-av-ld-md",
+        "renfe_ld=posicion-vehiculos-av-ld-md",
     ).split(",")
     if "=" in x
 ]
@@ -36,8 +36,13 @@ TRUST_TS_EQUAL_HEADER = os.getenv("TRUST_TS_EQUAL_HEADER", "0") == "1"
 TRIP_UPDATE_FEEDS = [
     tuple(x.split("=", 1)) for x in os.getenv(
         "TRIP_UPDATE_FEEDS",
-        "renfe_ld=horarios-viaje-alta-velocidad-larga-media-distancia,renfe_cercanias=horarios-viaje-cercanias",
+        "renfe_ld=horarios-viaje-alta-velocidad-larga-media-distancia",
     ).split(",") if "=" in x
 ]
 STATIONS_ENABLED = os.getenv("STATIONS_ENABLED", "1") == "1"
 STATION_EVENT_TTL_S = int(os.getenv("STATION_EVENT_TTL_S", "1800"))   # 30 min de historial
+
+# Productos a mostrar (route_short_name del GTFS de Renfe). Vacío = todos.
+# Alta velocidad: AVE, AVLO, AVE INT (internacional), EUROMED, AVANT, AVANT EXP, ALVIA
+PRODUCTS = {x.strip().upper() for x in os.getenv(
+    "PRODUCTS", "AVE,AVLO,AVE INT,EUROMED,AVANT,AVANT EXP,ALVIA").split(",") if x.strip()}

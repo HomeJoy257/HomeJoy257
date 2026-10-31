@@ -30,6 +30,7 @@ class RealTrainPosition(BaseModel):
     trip_id: str | None = None
     label: str | None = None
     route_id: str | None = None
+    product: str | None = None                  # AVE / AVLO / ALVIA / AVANT / ... (GTFS Renfe)
     status: str | None = None                   # STOPPED_AT / INCOMING_AT / IN_TRANSIT_TO
     stop_id: str | None = None
     speed_mps: float | None = None

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RailRadar España</title>
+<title>RailRadar Alta Velocidad</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -11,25 +11,26 @@
 <div id="map"></div>
 <aside id="panel">
   <header>
-    <h1>RailRadar <span>España</span></h1>
+    <h1>RailRadar <span>Alta Velocidad</span></h1>
     <div id="conn" class="pill off">Conectando…</div>
   </header>
   <section class="kpis">
-    <div><b id="k-ld">—</b><small>AVE/LD/MD</small></div>
-    <div><b id="k-cer">—</b><small>Cercanías</small></div>
+    <div><b id="k-ld">—</b><small>trenes AV</small></div>
     <div><b id="k-st">—</b><small>estaciones</small></div>
+    <div><b id="k-late">—</b><small>retraso &gt;5 min</small></div>
+  </section>
+  <section>
+    <h2>Producto</h2>
+    <div id="chips" class="chips"></div>
   </section>
   <section>
     <h2>Capas</h2>
     <label class="layer"><input type="checkbox" id="l-ld" checked>
-      <i class="sw" style="background:var(--gray)"></i>AVE / Larga / Media Distancia
+      <i class="sw" style="background:var(--gray)"></i>Trenes de alta velocidad
       <small>GPS de Renfe · Renfe no publica la hora de la posición</small></label>
     <label class="layer"><input type="checkbox" id="l-st" checked>
       <i class="sw sq" style="background:var(--accent)"></i>Trenes en estación
       <small>Renfe indica parado / llegando · con retraso oficial</small></label>
-    <label class="layer"><input type="checkbox" id="l-cer">
-      <i class="sw" style="background:var(--fresh)"></i>Cercanías
-      <small>GPS con edad medida ≤120 s (verde→naranja)</small></label>
   </section>
   <section>
     <h2>Fuentes</h2>

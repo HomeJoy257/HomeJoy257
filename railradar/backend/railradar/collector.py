@@ -11,11 +11,11 @@ from datetime import datetime, timezone
 import httpx
 
 from .ckan import resolve_feed
-from .config import (CKAN_REFRESH_S, FEED_POLICY, FEEDS, REDIS_URL, STATION_EVENT_TTL_S,
+from .config import (CKAN_REFRESH_S, FEED_POLICY, FEEDS, PRODUCTS, REDIS_URL, STATION_EVENT_TTL_S,
                      STATIONS_ENABLED, TRIP_UPDATE_FEEDS)
 from .model import age_seconds, classify
 from .parser import parse_vehicle_positions
-from .stations import load_stations, parse_trip_updates
+from .stations import load_gtfs, parse_trip_updates, product_for
 from .store import DELAYS_KEY, EVENTS_KEY, STATIONS_KEY, make_store, utcnow_iso
 
 log = logging.getLogger("railradar.collector")
@@ -25,7 +25,7 @@ class FeedWorker:
     """Aprende cada cuánto publica el feed y sondea justo después."""
 
     def __init__(self, name: str, ref: str, store, client: httpx.AsyncClient,
-                 base_period: float = 15.0):
+                 base_period: float = 15.0, gtfs: dict | None = None):
         self.name, self.ref, self.store, self.c = name, ref, store, client
         self.period = base_period
         self.url = None
@@ -35,6 +35,7 @@ class FeedWorker:
         self.resolved_at = 0.0
         self.consecutive_errors = 0
         self.policy = FEED_POLICY.get(name, "strict")
+        self.gtfs = gtfs if gtfs is not None else {"products": {}}   # compartido, se refresca a diario
         # id -> (lat, lon, coord_since|None). coord_since=None: coordenada vista desde
         # el arranque sin cambiar aún -> edad desconocida (no la inventamos)
         self.coords: dict[str, tuple[float, float, datetime | None]] = {}
@@ -82,7 +83,20 @@ class FeedWorker:
         present = set()
         events = {}
         first_load = not self.coords
+        products = self.gtfs.get("products") or {}
         for p in positions:
+            if products:
+                p.product = product_for(products, p.trip_id, p.label)
+            if PRODUCTS:
+                if not products:                     # sin índice: no mostramos nada (fail-closed)
+                    counts["no_product_index"] += 1
+                    continue
+                if p.product is None:
+                    counts["unknown_product"] += 1
+                    continue
+                if p.product not in PRODUCTS:
+                    counts["other_product"] += 1
+                    continue
             present.add(p.external_id)
             prev = self.coords.get(p.external_id)
             if prev and (prev[0], prev[1]) == (p.latitude, p.longitude):
@@ -110,7 +124,7 @@ class FeedWorker:
             if p.stop_id and p.status in ("STOPPED_AT", "INCOMING_AT"):
                 events[f"{p.stop_id}|{p.source}:{p.external_id}"] = {
                     "stop_id": p.stop_id, "train": f"{p.source}:{p.external_id}",
-                    "label": p.label, "trip_id": p.trip_id, "status": p.status,
+                    "label": p.label, "trip_id": p.trip_id, "status": p.status, "product": p.product,
                     "source": p.source, "operator": "Renfe", "seen_at": now.isoformat()}
         if events:
             await self.store.hset_many(EVENTS_KEY, events)
@@ -181,16 +195,40 @@ async def prune_events(store):
         await store.hdel(EVENTS_KEY, *old)
 
 
+async def refresh_gtfs(store, client, gtfs: dict, every_s: int = 6 * 3600):
+    while True:
+        try:
+            stations, products = await load_gtfs(client)
+            if stations:
+                await store.replace_hash(STATIONS_KEY, stations)
+            if products:
+                gtfs["products"] = products
+            gtfs["ready"].set()
+        except Exception as e:  # noqa: BLE001
+            log.warning("GTFS: %s", e)
+            gtfs["ready"].set()
+        await asyncio.sleep(every_s)
+
+
 async def run_collector(store=None):
     store = store or make_store(REDIS_URL)
-    async with httpx.AsyncClient(timeout=15, follow_redirects=True,
+    gtfs = {"products": {}, "ready": asyncio.Event()}
+    async with httpx.AsyncClient(timeout=20, follow_redirects=True,
                                  headers={"User-Agent": "RailRadar/0.1"}) as client:
-        tasks = [FeedWorker(n, ref, store, client).run() for n, ref in FEEDS]
+        tasks = []
+        if STATIONS_ENABLED or PRODUCTS:
+            tasks.append(refresh_gtfs(store, client, gtfs))
         if STATIONS_ENABLED:
-            stations = await load_stations(client)
-            await store.replace_hash(STATIONS_KEY, stations)
             tasks += [TripUpdatesWorker(n, ref, store, client).run() for n, ref in TRIP_UPDATE_FEEDS]
             tasks.append(prune_events(store))
+
+        async def feeds():
+            if PRODUCTS:
+                await gtfs["ready"].wait()
+                if not gtfs["products"]:
+                    log.error("Sin índice GTFS de productos: no se puede filtrar alta velocidad")
+            await asyncio.gather(*(FeedWorker(n, ref, store, client, gtfs=gtfs).run() for n, ref in FEEDS))
+        tasks.append(feeds())
         await asyncio.gather(*tasks)
 
 

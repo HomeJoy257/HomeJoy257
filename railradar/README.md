@@ -1,4 +1,4 @@
-# RailRadar España — MVP
+# RailRadar Alta Velocidad — MVP
 
 Mapa en directo con **solo posiciones GPS reales** de los feeds oficiales de Renfe.
 Sin interpolación ni map matching. Si la posición tiene más de **120 s** (según el
@@ -51,6 +51,12 @@ cd railradar/backend && python3 -m pytest -q
 | `GET /api/v1/stats` | Visibles por fuente y por franja de antigüedad |
 | `GET /api/v1/stream` | SSE: `hello`, `train.position`, `source.status` |
 | `GET /health/live`, `/health/ready` | Salud |
+
+## Solo alta velocidad
+`PRODUCTS` filtra por el producto que Renfe asigna en su GTFS oficial (`routes.txt → route_short_name`,
+cruzado por `trip_id`; 156/158 trenes casan): AVE, AVLO, AVE INT, EUROMED, AVANT, AVANT EXP, ALVIA.
+Se excluyen MD, REGIONAL, REG.EXP., Intercity, PROXIMDAD, TRENCELTA. Si el índice GTFS no carga,
+no se muestra ningún tren (fail-closed). Iryo y Ouigo no están: no publican datos abiertos.
 
 ## Reglas de datos (tras auditar Renfe con datos reales)
 La auditoría del 31-10-2026 mostró que el `timestamp` de Cercanías es de **lote**

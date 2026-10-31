@@ -13,9 +13,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 STOPS = {"60000": ("Madrid Pta. de Atocha", 40.4065, -3.6896), "71801": ("Barcelona Sants", 41.3792, 2.1400),
          "65000": ("València Joaquín Sorolla", 39.4594, -0.3829), "51003": ("Sevilla Santa Justa", 37.3917, -5.9750),
          "50500": ("Córdoba", 37.8888, -4.7894), "04040": ("Zaragoza Delicias", 41.6585, -0.9112)}
-LD = [  # (tren, origen, destino) – recorridos ficticios entre estaciones reales
-    ("03063", "60000", "71801"), ("02151", "60000", "51003"), ("05121", "60000", "65000"),
-    ("02260", "51003", "60000"), ("03190", "71801", "60000"), ("00694", "50500", "60000"),
+LD = [  # (tren, origen, destino, producto) – recorridos ficticios entre estaciones reales
+    ("03063", "60000", "71801", "AVE"), ("02151", "60000", "51003", "AVE"), ("05121", "60000", "65000", "AVLO"),
+    ("02260", "51003", "60000", "ALVIA"), ("03190", "71801", "60000", "AVE"), ("08155", "50500", "51003", "AVANT"),
+    ("17041", "60000", "04040", "MD"), ("15012", "65000", "60000", "REG.EXP."),
 ]
 CER = [("C1-23542", 40.42, -3.70), ("C2-23015", 41.38, 2.17), ("C3-23801", 39.47, -0.38), ("C5-23721", 37.36, -6.21)]
 PERIOD = 20
@@ -28,7 +29,7 @@ def lerp(a, b, f):
 def ld_doc(now):
     pub = now - now % PERIOD
     ents = []
-    for i, (num, o, d) in enumerate(LD):
+    for i, (num, o, d, _p) in enumerate(LD):
         f = ((pub / 3600 + i / len(LD)) % 1.0)
         if f > 0.7:                            # parado en destino
             lat, lon, st, sid = STOPS[d][1], STOPS[d][2], "STOPPED_AT", d
@@ -56,7 +57,7 @@ def cer_doc(now):
 
 
 def tu_doc(now):
-    ents = [{"id": f"TU_{n}", "tripUpdate": {"trip": {"tripId": f"{n}D"}, "delay": (i * 137) % 900}} for i, (n, _, _) in enumerate(LD)]
+    ents = [{"id": f"TU_{n}", "tripUpdate": {"trip": {"tripId": f"{n}D"}, "delay": (i * 137) % 900}} for i, (n, *_r) in enumerate(LD)]
     return {"header": {"timestamp": str(now)}, "entity": ents}, now // 30
 
 
@@ -65,6 +66,10 @@ def gtfs_zip():
     with zipfile.ZipFile(buf, "w") as z:
         z.writestr("stops.txt", "stop_id,stop_name,stop_lat,stop_lon\n" +
                    "\n".join(f"{k},{v[0]},{v[1]},{v[2]}" for k, v in STOPS.items()))
+        z.writestr("routes.txt", "route_id,agency_id,route_short_name,route_type\n" +
+                   "\n".join(f"R{n},1071,{p},2" for n, _, _, p in LD))
+        z.writestr("trips.txt", "route_id,service_id,trip_id,trip_short_name\n" +
+                   "\n".join(f"R{n},S,{n}D,{n}" for n, _, _, _ in LD))
     return buf.getvalue()
 
 

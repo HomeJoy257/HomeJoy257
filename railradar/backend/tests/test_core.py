@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from railradar.collector import FeedWorker
 from railradar.model import FRESH, UNKNOWN, RealTrainPosition, classify
 from railradar.parser import parse_vehicle_positions
-from railradar.stations import parse_stops, parse_trip_updates
+from railradar.stations import parse_products, parse_stops, parse_trip_updates, product_for
 from railradar.store import EVENTS_KEY, STATIONS_KEY, MemoryStore
 
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
@@ -51,7 +51,8 @@ def test_parser_accepts_missing_vehicle_ts():
     assert st["no_vehicle"] == 1 and st["no_vehicle_ts"] == 1
 
 
-async def test_collector_measures_age_from_coordinate_change():
+async def test_collector_measures_age_from_coordinate_change(monkeypatch):
+    monkeypatch.setattr("railradar.collector.PRODUCTS", set())
     store = MemoryStore()
     w = FeedWorker("renfe_cercanias", "http://x", store, client=None)
     w.policy = "strict"
@@ -70,7 +71,7 @@ async def test_collector_measures_age_from_coordinate_change():
 
 async def test_ld_unknown_age_and_station_event():
     store = MemoryStore()
-    w = FeedWorker("renfe_ld", "http://x", store, client=None)
+    w = FeedWorker("renfe_ld", "http://x", store, client=None, gtfs={"products": {"03063D": "AVE"}})
     w.policy = "unknown_age"
     await w._process({"entity": [{"id": "1", "vehicle": {
         "vehicle": {"id": "03063", "label": "AVE-03063"}, "trip": {"tripId": "03063D"},
@@ -117,3 +118,49 @@ def test_api_layers():
         st = c.get("/api/v1/stations/events").json()["features"]
         assert st[0]["properties"]["name"] == "Atocha" and st[0]["properties"]["events"][0]["delay_s"] == 240
         assert c.get("/health/ready").status_code == 200
+
+
+def _gtfs(routes, trips):
+    import io, zipfile
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w") as z:
+        z.writestr("routes.txt", "route_id,route_short_name   \n" + "\n".join(f"{a},{c}  " for a, c in routes))
+        z.writestr("trips.txt", "route_id,trip_id,trip_short_name\n" + "\n".join(f"{a},{b_},{c}" for a, b_, c in trips))
+    return b.getvalue()
+
+
+def test_products_index_and_lookup():
+    prods = parse_products(_gtfs([("R1", "AVE"), ("R2", "MD")],
+                                 [("R1", "0595112026-10-30", "05951"), ("R2", "1580412026-10-30", "15804")]))
+    assert product_for(prods, "0595112026-10-30", "05951") == "AVE"
+    assert product_for(prods, "0595122026-11-02", "05951") == "AVE"   # otra fecha: por nº de tren
+    assert product_for(prods, "1580412026-10-30", None) == "MD"
+    assert product_for(prods, "9999912026-10-30", None) is None
+
+
+async def test_only_high_speed_shown():
+    store = MemoryStore()
+    w = FeedWorker("renfe_ld", "http://x", store, client=None,
+                   gtfs={"products": {"A": "AVE", "B": "MD", "C": "ALVIA"}})
+    w.policy = "unknown_age"
+    ent = lambda i, trip: {"id": i, "vehicle": {"vehicle": {"id": i}, "trip": {"tripId": trip},
+                                                "position": {"latitude": 40.4, "longitude": -3.7}}}
+    await w._process({"entity": [ent("1", "A"), ent("2", "B"), ent("3", "C"), ent("4", "Z")]})
+    snap = {p.external_id: p.product for p in await store.snapshot()}
+    assert snap == {"1": "AVE", "3": "ALVIA"}
+
+
+async def test_no_product_index_fails_closed():
+    store = MemoryStore()
+    w = FeedWorker("renfe_ld", "http://x", store, client=None, gtfs={"products": {}})
+    w.policy = "unknown_age"
+    await w._process({"entity": [{"id": "1", "vehicle": {"vehicle": {"id": "1"},
+                                  "position": {"latitude": 40.4, "longitude": -3.7}}}]})
+    assert await store.snapshot() == []
+
+
+def test_duplicate_train_number_gets_distinct_ids():
+    doc = {"entity": [{"id": str(i), "vehicle": {"vehicle": {"id": "05951"}, "trip": {"tripId": f"059511{i}"},
+                                                 "position": {"latitude": 40, "longitude": -3}}} for i in range(3)]}
+    ps, _ = parse_vehicle_positions(doc, "t", NOW)
+    assert len({p.external_id for p in ps}) == 3

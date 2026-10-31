@@ -35,13 +35,45 @@ async def _gtfs_url(c: httpx.AsyncClient, dataset: str) -> str:
     return res[0]["url"]
 
 
+def _csv(z: zipfile.ZipFile, suffix: str):
+    name = next((n for n in z.namelist() if n.endswith(suffix)), None)
+    if not name:
+        return []
+    text = z.read(name).decode("utf-8-sig", "replace")
+    # Renfe rellena cabeceras y valores con espacios: se normalizan
+    return [{(k or "").strip(): (v or "").strip() for k, v in row.items()}
+            for row in csv.DictReader(io.StringIO(text))]
+
+
+def parse_products(zip_bytes: bytes) -> dict[str, str]:
+    """trip_id -> producto (route_short_name) y nº de tren -> producto."""
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        routes = {r["route_id"]: r.get("route_short_name", "").upper() for r in _csv(z, "routes.txt")}
+        out = {}
+        for t in _csv(z, "trips.txt"):
+            prod = routes.get(t.get("route_id"))
+            if not prod:
+                continue
+            out[t["trip_id"]] = prod
+            if t.get("trip_short_name"):
+                out.setdefault(f"#{t['trip_short_name']}", prod)
+    return out
+
+
+def product_for(products: dict, trip_id: str | None, train: str | None) -> str | None:
+    if trip_id and trip_id in products:
+        return products[trip_id]
+    for num in (train, (trip_id or "")[:5]):
+        if num and f"#{num}" in products:
+            return products[f"#{num}"]
+    return None
+
+
 def parse_stops(zip_bytes: bytes) -> dict[str, dict]:
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
-        name = next(n for n in z.namelist() if n.endswith("stops.txt"))
-        text = z.read(name).decode("utf-8-sig", "replace")
+        rows = _csv(z, "stops.txt")
     out = {}
-    for row in csv.DictReader(io.StringIO(text)):
-        row = {k.strip(): (v or "").strip() for k, v in row.items() if k}
+    for row in rows:
         try:
             out[row["stop_id"]] = {"name": row.get("stop_name") or row["stop_id"],
                                    "lat": float(row["stop_lat"]), "lon": float(row["stop_lon"])}
@@ -50,17 +82,23 @@ def parse_stops(zip_bytes: bytes) -> dict[str, dict]:
     return out
 
 
-async def load_stations(client: httpx.AsyncClient, max_age_s: int = 7 * 86400) -> dict[str, dict]:
-    """stop_id -> {name, lat, lon}. Cachea en disco una semana."""
+async def load_gtfs(client: httpx.AsyncClient, max_age_s: int = 86400,
+                    sources=("renfe_ld",)) -> tuple[dict[str, dict], dict[str, str]]:
+    """(estaciones stop_id -> {name, lat, lon}, productos trip_id -> AVE/ALVIA/...).
+    Cachea en disco 24 h (el GTFS de Renfe cambia con frecuencia)."""
     CACHE.mkdir(exist_ok=True)
     stations: dict[str, dict] = {}
+    products: dict[str, str] = {}
     override = [u for u in os.getenv("STATIONS_GTFS_URLS", "").split(",") if u]
     for u in override:                      # desarrollo / pruebas
         r = await client.get(u)
         stations.update(parse_stops(r.content))
+        products.update(parse_products(r.content))
     if override:
-        return stations
+        return stations, products
     for src, ds in GTFS_DATASETS.items():
+        if src not in sources:
+            continue
         f = CACHE / f"{src}_gtfs.zip"
         try:
             if not f.exists() or time.time() - f.stat().st_mtime > max_age_s:
@@ -68,12 +106,15 @@ async def load_stations(client: httpx.AsyncClient, max_age_s: int = 7 * 86400) -
                 r = await client.get(url, timeout=120)
                 r.raise_for_status()
                 f.write_bytes(r.content)
-            stops = parse_stops(f.read_bytes())
+            data = f.read_bytes()
+            stops = parse_stops(data)
             stations.update(stops)
-            log.info("estaciones %s: %d", src, len(stops))
-        except Exception as e:  # noqa: BLE001 — la capa de estaciones es opcional
+            prods = parse_products(data)
+            products.update(prods)
+            log.info("GTFS %s: %d estaciones, %d viajes", src, len(stops), len(prods))
+        except Exception as e:  # noqa: BLE001
             log.warning("no pude cargar GTFS %s: %s", src, e)
-    return stations
+    return stations, products
 
 
 def parse_trip_updates(doc: dict) -> dict[str, dict]:

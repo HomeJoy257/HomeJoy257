@@ -10,6 +10,9 @@ const trains = new Map();     // id -> {p, coords, seenMs, sinceMs|null}
 let stationsFC = { type: "FeatureCollection", features: [] };
 let clockOffset = 0, selected = null, selectedStation = null;
 const show = { ld: true, st: true, cer: false };
+const PRODUCTS = ["AVE", "AVLO", "ALVIA", "AVANT", "AVANT EXP", "EUROMED", "AVE INT"];
+const prodOn = new Set(PRODUCTS);
+const prodOk = (prod) => !prod || prodOn.has(prod);
 const now = () => Date.now() + clockOffset;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -73,16 +76,19 @@ function classifyClient(tr, t) {
 
 function trainsFC() {
   const t = now(), features = [];
-  let nLd = 0, nCer = 0;
+  let nLd = 0, nCer = 0, nLate = 0;
   for (const [id, tr] of trains) {
     const c = classifyClient(tr, t);
     if (!c) { trains.delete(id); if (selected === id) selectTrain(null); continue; }
+    if (!prodOk(tr.p.product)) continue;
     isCer(tr.p) ? nCer++ : nLd++;
+    if (tr.p.delay_s != null && tr.p.delay_s > 300) nLate++;
     if (isCer(tr.p) ? !show.cer : !show.ld) continue;
     features.push({ type: "Feature", id: hashId(id), geometry: { type: "Point", coordinates: tr.coords },
       properties: { id, cls: c.cls, age: c.age ?? 0 } });
   }
-  $("k-ld").textContent = nLd; $("k-cer").textContent = nCer;
+  $("k-ld").textContent = nLd; $("k-late").textContent = nLate;
+  renderChips();
   return { type: "FeatureCollection", features };
 }
 
@@ -115,7 +121,7 @@ async function snapshot() {
 function visibleStations() {
   const features = [];
   for (const f of stationsFC.features) {
-    const evs = f.properties.events.filter((e) => (e.source === "renfe_cercanias" ? show.cer : show.ld));
+    const evs = f.properties.events.filter((e) => (e.source === "renfe_cercanias" ? show.cer : show.ld) && prodOk(e.product));
     if (evs.length) features.push({ ...f, properties: { ...f.properties, count: evs.length, events: evs } });
   }
   return { type: "FeatureCollection", features };
@@ -161,7 +167,7 @@ function renderTrain() {
     : c.cls === "gray"
       ? `Desconocida. La coordenada cambió por última vez hace ${ago((t - tr.sinceMs) / 1000)} (visto por RailRadar; Renfe no indica cuándo se tomó)`
       : `${ago((t - tr.sinceMs) / 1000)} desde que cambió la coordenada (medido por RailRadar)`;
-  const rows = [["Operadora", "Renfe"], ["Fuente", p.source], ["Tipo", "GPS publicado por Renfe"],
+  const rows = [["Producto", p.product], ["Operadora", "Renfe"], ["Tipo", "GPS publicado por Renfe"],
     ["Antigüedad", ageTxt], ["Estado", { STOPPED_AT: "Parado en estación", INCOMING_AT: "Llegando a estación", IN_TRANSIT_TO: "En marcha" }[p.status]],
     ["Retraso oficial", p.delay_s != null ? (p.delay_s <= 60 ? "En hora" : `+${Math.round(p.delay_s / 60)} min`) : null],
     ["Viaje", p.trip_id], ["Lat, Lon", `${tr.coords[1].toFixed(5)}, ${tr.coords[0].toFixed(5)}`]];
@@ -178,7 +184,7 @@ function renderStation() {
   const p = f.properties, evs = p.events;
   $("d-id").textContent = p.name;
   $("d-body").innerHTML = `<dt>Trenes</dt><dd><ul class="evs">${evs.map((e) =>
-    `<li><span>${esc(e.label || e.train.split(":")[1])}<br><small>${e.status === "STOPPED_AT" ? "parado" : "llegando"} · hace ${e.minutes_ago} min</small></span>${fmtDelay(e.delay_s)}</li>`).join("")}</ul></dd>
+    `<li><span>${esc((e.product ? e.product + " " : "") + (e.label || e.train.split(":")[1]))}<br><small>${e.status === "STOPPED_AT" ? "parado" : "llegando"} · hace ${e.minutes_ago} min</small></span>${fmtDelay(e.delay_s)}</li>`).join("")}</ul></dd>
     <dt>Fuente</dt><dd>Renfe (estado del tren + retrasos oficiales)</dd>`;
 }
 
@@ -186,7 +192,7 @@ function connect() {
   const es = new EventSource(`${API}/api/v1/stream`), conn = $("conn");
   es.addEventListener("hello", async (e) => {
     clockOffset = Date.parse(JSON.parse(e.data).server_time) - Date.now();
-    conn.textContent = "En directo"; conn.className = "pill on";
+    conn.textContent = "Directo"; conn.className = "pill on";
     await snapshot(); loadSources(); loadStations();
   });
   es.addEventListener("train.position", (e) => upsert(JSON.parse(e.data)));
@@ -194,7 +200,22 @@ function connect() {
   es.onerror = () => { conn.textContent = "Reconectando…"; conn.className = "pill off"; };
 }
 
-for (const k of ["ld", "st", "cer"]) $(`l-${k}`).addEventListener("change", (e) => { show[k] = e.target.checked; render(); });
+for (const k of ["ld", "st"]) $(`l-${k}`).addEventListener("change", (e) => { show[k] = e.target.checked; render(); });
+
+// Chips de producto con recuento en vivo
+let chipsKey = "";
+function renderChips() {
+  const n = {};
+  for (const tr of trains.values()) if (tr.p.product) n[tr.p.product] = (n[tr.p.product] || 0) + 1;
+  const key = PRODUCTS.map((p) => `${p}:${n[p] || 0}:${prodOn.has(p)}`).join("|");
+  if (key === chipsKey) return; chipsKey = key;
+  $("chips").innerHTML = PRODUCTS.filter((p) => n[p] || ["AVE", "AVLO", "ALVIA", "AVANT"].includes(p))
+    .map((p) => `<button class="chip ${prodOn.has(p) ? "on" : ""}" data-p="${p}">${p}<small>${n[p] || 0}</small></button>`).join("");
+}
+$("chips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const p = b.dataset.p; prodOn.has(p) ? prodOn.delete(p) : prodOn.add(p); chipsKey = ""; render();
+});
 setInterval(render, 1000);
 setInterval(loadStations, 30000);
 setInterval(() => renderSources({}), 5000);
