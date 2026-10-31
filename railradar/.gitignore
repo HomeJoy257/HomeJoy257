@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 audit_out/
 *.pyc
+dump.rdb
