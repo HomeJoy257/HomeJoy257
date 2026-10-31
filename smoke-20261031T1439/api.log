@@ -1,0 +1,17 @@
+INFO:     Started server process [2898]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:43222 - "GET /api/v1/trains/live HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43226 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43230 - "GET /api/v1/sources HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43244 - "GET /api/v1/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43246 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43246 - "GET /style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43262 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43262 - "GET /api/v1/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43246 - "GET /api/v1/trains/live HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43246 - "GET /api/v1/sources HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43270 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40764 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41630 - "GET /api/v1/stations/events HTTP/1.1" 200 OK
