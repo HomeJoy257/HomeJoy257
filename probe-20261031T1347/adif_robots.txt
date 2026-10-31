@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /es/
+Disallow: /en/
+Disallow: /ca-AD/
+Disallow: /gl/
+Disallow: /eu/
+Disallow: /ca/
+Sitemap: https://adif.es/sitemap.xml

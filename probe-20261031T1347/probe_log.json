@@ -1,0 +1,924 @@
+[
+  {
+    "url": "https://data.renfe.com/api/3/action/package_search?q=horarios&rows=50",
+    "status": 200,
+    "final_url": "https://data.renfe.com/api/3/action/package_search?q=horarios&rows=50",
+    "ctype": "application/json;charset=utf-8",
+    "bytes": 15714,
+    "datasets": [
+      {
+        "name": "horarios-cercanias",
+        "title": "Horarios cercanías",
+        "resources": [
+          [
+            "Horarios cercanías",
+            "GTFS",
+            "https://ssl.renfe.com/ftransit/Fichero_CER_FOMENTO/fomento_transit.zip"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-de-alta-velocidad-larga-distancia-y-media-distancia",
+        "title": "Horarios de alta velocidad, larga distancia y media distancia",
+        "resources": [
+          [
+            "Horarios de alta velocidad, larga distancia y media distancia",
+            "GTFS",
+            "https://ssl.renfe.com/gtransit/Fichero_AV_LD/google_transit.zip"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-viaje-cercanias",
+        "title": "Horarios de viaje",
+        "resources": [
+          [
+            "trip_updates.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/trip_updates.pb"
+          ],
+          [
+            "trip_updates.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates.json"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-viaje-alta-velocidad-larga-media-distancia",
+        "title": "Horarios de viaje para alta velocidad, larga distancia y media distancia",
+        "resources": [
+          [
+            "trip_updates_LD.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates_LD.json"
+          ],
+          [
+            "trip_updates_LD.pb",
+            "PB",
+            "https://gtfsrt.renfe.com/trip_updates_LD.pb"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://data.renfe.com/api/3/action/package_search?q=gtfs&rows=50",
+    "status": 200,
+    "final_url": "https://data.renfe.com/api/3/action/package_search?q=gtfs&rows=50",
+    "ctype": "application/json;charset=utf-8",
+    "bytes": 11632,
+    "datasets": [
+      {
+        "name": "incidencias-avisos",
+        "title": "Incidencias y avisos",
+        "resources": [
+          [
+            "alerts.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/alerts.pb"
+          ],
+          [
+            "alerts.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/alerts.json"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-viaje-cercanias",
+        "title": "Horarios de viaje",
+        "resources": [
+          [
+            "trip_updates.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/trip_updates.pb"
+          ],
+          [
+            "trip_updates.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates.json"
+          ]
+        ]
+      },
+      {
+        "name": "ubicacion-vehiculos",
+        "title": "Ubicación de los vehículos",
+        "resources": [
+          [
+            "vehicle_positions.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/vehicle_positions.pb"
+          ],
+          [
+            "vehicle_positions.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/vehicle_positions.json"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://data.renfe.com/api/3/action/package_search?q=estaciones&rows=50",
+    "status": 200,
+    "final_url": "https://data.renfe.com/api/3/action/package_search?q=estaciones&rows=50",
+    "ctype": "application/json;charset=utf-8",
+    "bytes": 204012,
+    "datasets": [
+      {
+        "name": "estaciones-rodalies-barcelona",
+        "title": "Estaciones Rodalies Barcelona",
+        "resources": [
+          [
+            "Estaciones Rodalies Barcelona",
+            "CSV",
+            "https://data.renfe.com/dataset/8bdd06a5-f7f6-4f21-9cb6-b76f39842726/resource/e3969f12-aff2-468e-9b82-a65a6dd1a0d3/download/listado-estaciones-rodalies-barcelona.csv"
+          ],
+          [
+            "Estaciones Rodalies Barcelona",
+            "XLSX",
+            "https://data.renfe.com/dataset/8bdd06a5-f7f6-4f21-9cb6-b76f39842726/resource/dd090aa2-7b8d-45ab-97c2-bf70653bc117/download/listado-estaciones-rodalies-barcelona.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-listado-completo",
+        "title": "Estaciones. Listado completo",
+        "resources": [
+          [
+            "Estaciones. Listado completo",
+            "CSV",
+            "https://ssl.renfe.com/ftransit/Fichero_estaciones/estaciones.csv"
+          ],
+          [
+            "Estaciones. Listado completo",
+            "XLSX",
+            "https://ssl.renfe.com/ftransit/Fichero_estaciones/estaciones.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "listado-estaciones-feve",
+        "title": "Estaciones de FEVE",
+        "resources": [
+          [
+            "Estaciones de FEVE",
+            "CSV",
+            "https://data.renfe.com/dataset/f72abe7d-fea8-4af1-9e3d-cf0997b81955/resource/4de015e6-987c-43ae-9350-8bf941ef66c7/download/listado-de-estaciones-feve-2.csv"
+          ],
+          [
+            "Estaciones de FEVE",
+            "XLSX",
+            "https://data.renfe.com/dataset/f72abe7d-fea8-4af1-9e3d-cf0997b81955/resource/dbaa0de3-16ad-40ac-86ce-82128044b1d8/download/listado-de-estaciones-feve.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-murcia-alicante",
+        "title": "Estaciones Cercanías Murcia/Alicante",
+        "resources": [
+          [
+            "Estaciones Cercanías Murcia/Alicante",
+            "CSV",
+            "https://data.renfe.com/dataset/9b7b24d0-57d0-489c-bcd6-cb78e96135e1/resource/1d17b744-4c68-4578-bdc3-b51457892967/download/listado-estaciones-cercanias-murcia-alicante.csv"
+          ],
+          [
+            "Estaciones Cercanías Murcia/Alicante",
+            "XLSX",
+            "https://data.renfe.com/dataset/9b7b24d0-57d0-489c-bcd6-cb78e96135e1/resource/5b7b1ca8-f14e-481a-8775-bc2afba666f1/download/listado-estaciones-cercanias-murcia-alicante.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-zaragoza",
+        "title": "Estaciones Cercanías Zaragoza",
+        "resources": [
+          [
+            "Estaciones Cercanías Zaragoza",
+            "CSV",
+            "https://data.renfe.com/dataset/479fa2dd-76e0-4a97-ac88-b848943f9133/resource/9651ce18-9437-4274-ad04-143f1cc9e6db/download/listado-estaciones-cercanias-zaragoza_2.csv"
+          ],
+          [
+            "Estaciones Cercanías Zaragoza",
+            "XLSX",
+            "https://data.renfe.com/dataset/479fa2dd-76e0-4a97-ac88-b848943f9133/resource/bb570f73-4749-4d39-b604-85732bad76d8/download/listado-estaciones-cercanias-zaragoza_2.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-madrid",
+        "title": "Estaciones Cercanías Madrid",
+        "resources": [
+          [
+            "Estaciones Cercanías Madrid",
+            "CSV",
+            "https://data.renfe.com/dataset/0b763a1a-860d-4346-8818-765d2559248f/resource/daa68d9b-77cf-4024-890f-285d31184c5a/download/listado-estaciones-cercanias-madrid.csv"
+          ],
+          [
+            "Estaciones Cercanías Madrid",
+            "XLSX",
+            "https://data.renfe.com/dataset/0b763a1a-860d-4346-8818-765d2559248f/resource/a5e5746b-49ba-4276-b154-c8770995d5cb/download/listado-estaciones-cercanias-madrid.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-valencia",
+        "title": "Estaciones Cercanías Valencia",
+        "resources": [
+          [
+            "Estaciones Cercanías Valencia",
+            "CSV",
+            "https://data.renfe.com/dataset/b5a039a1-4f02-4f9c-b617-a94d55779647/resource/0b1caf38-e6a9-4965-a94d-9a24c5a4ae84/download/listado-estaciones-cercanias-valencia.csv"
+          ],
+          [
+            "Estaciones Cercanías Valencia",
+            "XLSX",
+            "https://data.renfe.com/dataset/b5a039a1-4f02-4f9c-b617-a94d55779647/resource/5ee814b4-5d3b-4dfd-8623-cb37b86af15d/download/listado-estaciones-cercanias-valencia.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-sevilla",
+        "title": "Estaciones Cercanías Sevilla",
+        "resources": [
+          [
+            "Estaciones Cercanías Sevilla",
+            "CSV",
+            "https://data.renfe.com/dataset/d13549fe-f132-4633-aa50-5ed70b2f71dd/resource/ac3b4229-1c69-412f-a6de-29df913ece92/download/listado-estaciones-cercanias-sevilla.csv"
+          ],
+          [
+            "Estaciones Cercanías Sevilla",
+            "XLSX",
+            "https://data.renfe.com/dataset/d13549fe-f132-4633-aa50-5ed70b2f71dd/resource/ceaa54ce-7cf7-4c0a-8026-b48dc6215d73/download/listado-estaciones-cercanias-sevilla.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-san-sebastian",
+        "title": "Estaciones Cercanías San Sebastián",
+        "resources": [
+          [
+            "Estaciones Cercanías San Sebastián",
+            "CSV",
+            "https://data.renfe.com/dataset/f3dc3712-cc1e-4b23-ada0-50562e9cf38b/resource/e8e8d882-865e-4032-8d39-d60cd0cfcdff/download/listado-estaciones-cercanias-san-sebastian.csv"
+          ],
+          [
+            "Estaciones Cercanías San Sebastián",
+            "XLSX",
+            "https://data.renfe.com/dataset/f3dc3712-cc1e-4b23-ada0-50562e9cf38b/resource/5b2326a8-00e4-45d6-8c63-77a58bf989cf/download/listado-estaciones-cercanias-san-sebastian.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-malaga",
+        "title": "Estaciones Cercanías Málaga",
+        "resources": [
+          [
+            "Estaciones Cercanías Málaga",
+            "CSV",
+            "https://data.renfe.com/dataset/9cd08424-f617-4adb-a230-68abdb2c8abf/resource/4b651d25-3fed-4f6a-be4d-18352d7e2aea/download/listado-estaciones-cercanias-malaga-v4.csv"
+          ],
+          [
+            "Estaciones Cercanías Málaga",
+            "XLSX",
+            "https://data.renfe.com/dataset/9cd08424-f617-4adb-a230-68abdb2c8abf/resource/a2368cff-1562-4dde-8466-9635ea3a572a/download/listado-estaciones-cercanias-malaga-v3.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-asturias",
+        "title": "Estaciones Cercanías Asturias",
+        "resources": [
+          [
+            "Estaciones Cercanías Asturias",
+            "CSV",
+            "https://data.renfe.com/dataset/a94a67b4-c353-417c-b471-284998bc257d/resource/6b73014a-e5bd-4b0e-b17b-1f8abe47a90f/download/listado-estaciones-cercanias-asturias.csv"
+          ],
+          [
+            "Estaciones Cercanías Asturias",
+            "XLSX",
+            "https://data.renfe.com/dataset/a94a67b4-c353-417c-b471-284998bc257d/resource/0c63c264-f3da-42f4-8b42-5b4fec82b038/download/listado-estaciones-cercanias-asturias.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-cadiz",
+        "title": "Estaciones Cercanías Cádiz",
+        "resources": [
+          [
+            "Estaciones Cercanías Cádiz",
+            "CSV",
+            "https://data.renfe.com/dataset/d2197774-6671-45a7-ad3b-eadac1b66475/resource/2c3afbbd-30f6-41b1-815a-6ef452457f92/download/cercanias-cadiz-.csv"
+          ],
+          [
+            "Estaciones Cercanías Cádiz",
+            "XLSX",
+            "https://data.renfe.com/dataset/d2197774-6671-45a7-ad3b-eadac1b66475/resource/462fc814-c2bd-4d67-9d51-e7cbf1852e08/download/listado-estaciones-cercanias-cadiz.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-santander",
+        "title": "Estaciones Cercanías Santander",
+        "resources": [
+          [
+            "Estaciones Cercanías Santander",
+            "CSV",
+            "https://data.renfe.com/dataset/aa5cf888-f8b9-4824-b60a-7ae3ba6ec32b/resource/18dd8342-b68e-4846-9e52-1a96faf85e80/download/listado-estaciones-cercanias-santander.csv"
+          ],
+          [
+            "Estaciones Cercanías Santander",
+            "XLSX",
+            "https://data.renfe.com/dataset/aa5cf888-f8b9-4824-b60a-7ae3ba6ec32b/resource/2d65e7dc-ba44-466b-87e7-6dd949dd1749/download/listado-estaciones-cercanias-santander.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "estaciones-cercanias-bilbao",
+        "title": "Estaciones Cercanías Bilbao",
+        "resources": [
+          [
+            "Estaciones Cercanías Bilbao",
+            "CSV",
+            "https://data.renfe.com/dataset/0356d125-ddd2-4db2-9f10-3083c91f3e2a/resource/3254a1ed-a2b7-4fd1-9e9e-23eefe35f162/download/listado-estaciones-cercanias-bilbao.csv"
+          ],
+          [
+            "Estaciones Cercanías Bilbao",
+            "XLSX",
+            "https://data.renfe.com/dataset/0356d125-ddd2-4db2-9f10-3083c91f3e2a/resource/bbad0d7e-4228-427e-93a2-cbab298d90ac/download/listado-estaciones-cercanias-bilbao.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "listado-estaciones-de-alta-velocidad-larga-distancia-y-media-distancia",
+        "title": "Listado estaciones de Alta Velocidad, Larga Distancia y Media Distancia",
+        "resources": [
+          [
+            "Listado estaciones de Alta Velocidad, Larga Distancia y Media Distancia",
+            "CSV",
+            "https://data.renfe.com/dataset/1146f3f1-e06d-477c-8f74-84f8d0668cf9/resource/b22cd560-3a2b-45dd-a25d-2406941f6fcc/download/listado_completo_av_ld_md.csv"
+          ],
+          [
+            "Listado estaciones de Alta Velocidad, Larga Distancia y Media Distancia",
+            "XLSX",
+            "https://data.renfe.com/dataset/1146f3f1-e06d-477c-8f74-84f8d0668cf9/resource/ad38869c-644f-4314-9fca-3f353391a97f/download/listado_completo_av_ld_md.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-estaciones-de-cercanias",
+        "title": "Volumen de Viajeros por Franja Horaria (Estaciones de Cercanías)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Estaciones de Cercanías)",
+            "XLSX",
+            "https://data.renfe.com/dataset/bad45d4d-b809-40bd-8abb-d7f2c8bc9214/resource/e6105052-ad33-4428-b36f-77e6f06ef4a9/download/viajeros_por_franja.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Estaciones de Cercanías)",
+            "CSV",
+            "https://data.renfe.com/dataset/bad45d4d-b809-40bd-8abb-d7f2c8bc9214/resource/566dcfa2-4c02-48bf-99c9-a7606a097073/download/viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-viaje-cercanias",
+        "title": "Horarios de viaje",
+        "resources": [
+          [
+            "trip_updates.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/trip_updates.pb"
+          ],
+          [
+            "trip_updates.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates.json"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-bilbao",
+        "title": "Volumen de Viajeros por Franja Horaria (Bilbao)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Bilbao)",
+            "XLSX",
+            "https://data.renfe.com/dataset/e742c7dd-318a-4a19-ae0c-ef9dc1412d93/resource/c52cd2ff-1c43-432c-954a-cfbb327ae185/download/bilbao_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Bilbao)",
+            "CSV",
+            "https://data.renfe.com/dataset/e742c7dd-318a-4a19-ae0c-ef9dc1412d93/resource/dbcfba8a-81cf-4b4e-a9c1-74a9efdc3d35/download/bilbao_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-asturias",
+        "title": "Volumen de Viajeros por Franja Horaria (Asturias)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Asturias)",
+            "XLSX",
+            "https://data.renfe.com/dataset/88d8eb68-fbe6-432f-9d53-1d22b62da0a2/resource/a46d4dff-211c-4936-91f4-c26d78a32c40/download/asturias_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Asturias)",
+            "CSV",
+            "https://data.renfe.com/dataset/88d8eb68-fbe6-432f-9d53-1d22b62da0a2/resource/15b2600b-8a0f-4540-a010-481fbdff5341/download/asturias_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-barcelona",
+        "title": "Volumen de Viajeros por Franja Horaria (Barcelona)",
+        "resources": [
+          [
+            "Volumen de Viajeros por Franja Horaria (Barcelona)",
+            "XLSX",
+            "https://data.renfe.com/dataset/9190f983-e138-42da-901a-b37205562fe4/resource/10c14d86-c031-4c99-b8e3-bbc8994b6024/download/barcelona_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            "Volumen de Viajeros por Franja Horaria (Barcelona)",
+            "CSV",
+            "https://data.renfe.com/dataset/9190f983-e138-42da-901a-b37205562fe4/resource/1417396e-4d6a-466a-a987-03d07aa92bed/download/barcelona_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-murcia",
+        "title": "Volumen de Viajeros por Franja Horaria (Murcia)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Murcia)",
+            "XLSX",
+            "https://data.renfe.com/dataset/5a87a871-071c-4465-a101-9f0edf1369a1/resource/27bf13e4-413b-43bc-96ed-40b936224a6e/download/murcia_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Murcia)",
+            "CSV",
+            "https://data.renfe.com/dataset/5a87a871-071c-4465-a101-9f0edf1369a1/resource/b2262af9-5b4d-4449-9605-2ab8bf1a0603/download/murcia_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-cantabria",
+        "title": "Volumen de Viajeros por Franja Horaria (Cantabria)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Cantabria)",
+            "XLSX",
+            "https://data.renfe.com/dataset/3e24b697-0c98-4f13-b54d-4726ee295cee/resource/57608641-0eda-472a-8a61-3995e9141b86/download/cantabria_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Cantabria)",
+            "CSV",
+            "https://data.renfe.com/dataset/3e24b697-0c98-4f13-b54d-4726ee295cee/resource/2fc34064-db60-4909-93d9-d1812819d62f/download/cantabria_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-sevilla",
+        "title": "Volumen de Viajeros por Franja Horaria (Sevilla)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Sevilla)",
+            "XLSX",
+            "https://data.renfe.com/dataset/37043ef6-b403-4c5b-8160-ec3387157a5d/resource/fd86c898-80d1-4cc2-b146-404980c4cf32/download/sevilla_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Sevilla)",
+            "CSV",
+            "https://data.renfe.com/dataset/37043ef6-b403-4c5b-8160-ec3387157a5d/resource/98ccfde7-b3e0-45e6-a421-b26840296c28/download/sevilla_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-leon-am",
+        "title": "Volumen de Viajeros por Franja Horaria (León AM)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (León AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/fae11772-844a-4c0c-a158-0f0614a86490/resource/5a3c3597-4a03-4ce8-adae-df6f25da7a14/download/leon-am_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (León AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/fae11772-844a-4c0c-a158-0f0614a86490/resource/f04b61d7-e392-4744-94b3-cf312687701f/download/leon-am_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-asturias-am",
+        "title": "Volumen de Viajeros por Franja Horaria (Asturias AM)",
+        "resources": [
+          [
+            "Volumen de Viajeros por Franja Horaria (Asturias AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/a614817e-b722-4ca3-bfd5-7bc4911ea07f/resource/fccc67c5-b06a-49af-a745-f1aed4665c1b/download/asturias-am_viajeros_por_franja_csv.csv"
+          ],
+          [
+            "Volumen de Viajeros por Franja Horaria (Asturias AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/a614817e-b722-4ca3-bfd5-7bc4911ea07f/resource/16bac88d-ae14-4f86-b029-2441c1aed224/download/asturias-am_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-valencia",
+        "title": "Volumen de Viajeros por Franja Horaria (Valencia)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Valencia)",
+            "XLSX",
+            "https://data.renfe.com/dataset/f4353971-e703-4cf5-8ff3-94f8d26b8a5c/resource/47ed9ac5-3c99-4b60-91b8-568b76b46f7b/download/valencia_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Valencia)",
+            "CSV",
+            "https://data.renfe.com/dataset/f4353971-e703-4cf5-8ff3-94f8d26b8a5c/resource/89290ab0-41c4-4f1f-a6b3-6d51dceddb97/download/valencia_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-murcia-am",
+        "title": "Volumen de Viajeros por Franja Horaria (Murcia AM)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Murcia AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/d19c4a4c-7eec-4de7-aedd-2b32f39ecc49/resource/1425fa66-009d-43ef-b619-b69ff16b496c/download/murcia-am_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Murcia AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/d19c4a4c-7eec-4de7-aedd-2b32f39ecc49/resource/803809b9-23c0-4ebe-b1f1-e35879f39321/download/murcia-am_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-cantabria-am",
+        "title": "Volumen de Viajeros por Franja Horaria (Cantabria AM)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Cantabria AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/95af5de8-a765-487d-9b12-eaf8e9fcad8e/resource/b9e6a373-333d-4583-ba59-ed4ed4f54799/download/cantabria-am_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Cantabria AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/95af5de8-a765-487d-9b12-eaf8e9fcad8e/resource/ac876231-4ace-4cb6-9b7e-5024bc412429/download/cantabria-am_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-malaga",
+        "title": "Volumen de Viajeros por Franja Horaria (Málaga)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Málaga)",
+            "CSV",
+            "https://data.renfe.com/dataset/1fc09777-130a-4011-8b08-9be2724af6b1/resource/fa0beb56-a2ca-42ea-9b47-c48fee224a18/download/malaga_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Málaga)",
+            "XLSX",
+            "https://data.renfe.com/dataset/1fc09777-130a-4011-8b08-9be2724af6b1/resource/487e376f-3982-4514-9327-339aa95b3ec3/download/malaga_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-san-sebastian",
+        "title": "Volumen de Viajeros por Franja Horaria (San Sebastián)",
+        "resources": [
+          [
+            "Volumen de Viajeros por Franja Horaria (San Sebastián)",
+            "XLSX",
+            "https://data.renfe.com/dataset/5b2bbb7f-865d-434c-9645-1ba872e13e73/resource/c3bf8694-c8b1-4d87-aafe-a077ebbc326e/download/san-sebastian_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            "Volumen de Viajeros por Franja Horaria (San Sebastián)",
+            "CSV",
+            "https://data.renfe.com/dataset/5b2bbb7f-865d-434c-9645-1ba872e13e73/resource/ac784d68-b803-4b90-a915-388f3fbd7b20/download/san-sebastian_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-madrid",
+        "title": "Volumen de Viajeros por Franja Horaria (Madrid)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Madrid)",
+            "XLSX",
+            "https://data.renfe.com/dataset/57249df2-b1af-485f-bc1c-7436b0622477/resource/60ee2fe7-1bc1-4648-b9c8-0ba223d85702/download/madrid_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Madrid)",
+            "CSV",
+            "https://data.renfe.com/dataset/57249df2-b1af-485f-bc1c-7436b0622477/resource/a269b1e5-2760-4296-9db8-3339c3dde005/download/madrid_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-pais-vasco-am",
+        "title": "Volumen de Viajeros por Franja Horaria (País Vasco AM)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (País Vasco AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/42224f7b-6517-401b-815a-6aec8dbed02f/resource/d7102157-9bf8-49c9-a66f-9c2af6e090f0/download/pais-vasco-am_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (País Vasco AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/42224f7b-6517-401b-815a-6aec8dbed02f/resource/8173c696-951c-41f0-b28b-d4eccfdc8140/download/pais-vasco-am_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-galicia-am",
+        "title": "Volumen de Viajeros por Franja Horaria (Galicia AM)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Galicia AM)",
+            "XLSX",
+            "https://data.renfe.com/dataset/e2ae4d7a-f17b-4141-b994-492eb636d041/resource/d461f93e-42d2-4d60-92bd-d667b9c285bd/download/galicia-am_viajeros_por_franja_xlsx.xlsx"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Galicia AM)",
+            "CSV",
+            "https://data.renfe.com/dataset/e2ae4d7a-f17b-4141-b994-492eb636d041/resource/d164337e-625b-40d6-9375-9f4e1e355fc3/download/galicia-am_viajeros_por_franja_csv.csv"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-cadiz",
+        "title": "Volumen de Viajeros por Franja Horaria (Cádiz)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Cádiz)",
+            "CSV",
+            "https://data.renfe.com/dataset/171c6f89-87cf-4e3e-b3a3-69712b732bd4/resource/b01cefbc-46ee-4a8a-91ea-2f43d82a02c5/download/cadiz_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Cádiz)",
+            "XLSX",
+            "https://data.renfe.com/dataset/171c6f89-87cf-4e3e-b3a3-69712b732bd4/resource/222b1a8b-a8f1-4df3-9edc-651b2022d0b7/download/cadiz_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      },
+      {
+        "name": "volumen-de-viajeros-por-franja-horaria-zaragoza",
+        "title": "Volumen de Viajeros por Franja Horaria (Zaragoza)",
+        "resources": [
+          [
+            " Volumen de Viajeros por Franja Horaria (Zaragoza)",
+            "CSV",
+            "https://data.renfe.com/dataset/9126a016-ca5d-4efb-830c-4dbf71a16e4e/resource/5399100d-5231-41fe-a92d-437da549eb8f/download/zaragoza_viajeros_por_franja_csv.csv"
+          ],
+          [
+            " Volumen de Viajeros por Franja Horaria (Zaragoza)",
+            "XLSX",
+            "https://data.renfe.com/dataset/9126a016-ca5d-4efb-830c-4dbf71a16e4e/resource/4082ad93-b42f-44d4-998c-dd7f6fe7907e/download/zaragoza_viajeros_por_franja_xlsx.xlsx"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://data.renfe.com/api/3/action/package_search?q=retrasos&rows=50",
+    "status": 200,
+    "final_url": "https://data.renfe.com/api/3/action/package_search?q=retrasos&rows=50",
+    "ctype": "application/json;charset=utf-8",
+    "bytes": 6263,
+    "datasets": [
+      {
+        "name": "compromiso-puntualidad",
+        "title": "Compromiso puntualidad",
+        "resources": [
+          [
+            "Compromiso puntualidad",
+            "XLSX",
+            "https://data.renfe.com/dataset/db368105-75a7-4af9-9784-bf30ed29e22f/resource/78e2d1d6-3d12-4b8d-807c-aa0f51e7ec8b/download/indemnizaciones-por-retrasos.xlsx"
+          ],
+          [
+            "Compromiso puntualidad",
+            "CSV",
+            "https://data.renfe.com/dataset/db368105-75a7-4af9-9784-bf30ed29e22f/resource/b5e9016c-38bc-4d28-91f1-42d6d2e5b7fa/download/indemnizaciones-por-retrasos.csv"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://data.renfe.com/api/3/action/package_search?q=trip%20updates&rows=50",
+    "status": 200,
+    "final_url": "https://data.renfe.com/api/3/action/package_search?q=trip%20updates&rows=50",
+    "ctype": "application/json;charset=utf-8",
+    "bytes": 7937,
+    "datasets": [
+      {
+        "name": "horarios-viaje-alta-velocidad-larga-media-distancia",
+        "title": "Horarios de viaje para alta velocidad, larga distancia y media distancia",
+        "resources": [
+          [
+            "trip_updates_LD.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates_LD.json"
+          ],
+          [
+            "trip_updates_LD.pb",
+            "PB",
+            "https://gtfsrt.renfe.com/trip_updates_LD.pb"
+          ]
+        ]
+      },
+      {
+        "name": "horarios-viaje-cercanias",
+        "title": "Horarios de viaje",
+        "resources": [
+          [
+            "trip_updates.pb - GTFS Realtime",
+            "GTFS-RT",
+            "https://gtfsrt.renfe.com/trip_updates.pb"
+          ],
+          [
+            "trip_updates.json",
+            "JSON",
+            "https://gtfsrt.renfe.com/trip_updates.json"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "url": "https://www.adif.es/",
+    "status": 200,
+    "final_url": "https://www.adif.es/",
+    "ctype": "text/html;charset=UTF-8",
+    "bytes": 244202,
+    "api_like_urls": [
+      "https://sede.adif.gob.es/",
+      "https://www.adif.es/comunicacion",
+      "https://www.adif.es/comunicacion/diccionario-ferroviario",
+      "https://www.adif.es/comunicacion/fotografia",
+      "https://www.adif.es/comunicacion/multimedia",
+      "https://www.adif.es/comunicacion/notas-prensa",
+      "https://www.adif.es/comunicacion/nuestra-marca",
+      "https://www.adif.es/documents/20128/50133806/adif-av-blanco.svg/934c381c-b6c9-f32f-78dd-3c2bab83dd13?t=1768812696709)",
+      "https://www.adif.es/documents/20128/50133806/adif-av-color.svg/a35836d5-0e9e-23bd-b604-043ef2d3c390?t=1768812697424)",
+      "https://www.adif.es/documents/20128/50133806/adif-blanco.svg/903fb5af-d34a-147b-74b5-0f349274d46e?t=1768812696353)",
+      "https://www.adif.es/documents/20128/50133806/adif-color.svg/ce232fa5-411f-5d64-b761-59b50a9c420d?t=1768812697821)",
+      "https://www.adif.es/empleo",
+      "https://www.adif.es/empleo/oferta-empleo-publico",
+      "https://www.adif.es/empleo/oferta-empleo-publico/plazo-solicitud-abierto",
+      "https://www.adif.es/empleo/oferta-empleo-publico/proceso-resolucion",
+      "https://www.adif.es/empleo/oferta-empleo-publico/resueltas",
+      "https://www.adif.es/empleo/ofrecimiento-plaza-bolsa-empleo",
+      "https://www.adif.es/empresas-y-contratacion",
+      "https://www.adif.es/empresas-y-contratacion/contratacion",
+      "https://www.adif.es/empresas-y-contratacion/contratacion/informacion-relativa-actividad-contractual",
+      "https://www.adif.es/empresas-y-contratacion/contratacion/licitacion-electronica",
+      "https://www.adif.es/empresas-y-contratacion/facturacion-electronica",
+      "https://www.adif.es/empresas-y-contratacion/normativa-tecnica",
+      "https://www.adif.es/empresas-y-contratacion/validacion-productos-ferroviarios",
+      "https://www.adif.es/financiacion-europea",
+      "https://www.adif.es/financiacion-europea/informacion-general",
+      "https://www.adif.es/financiacion-europea/periodo-2014-2020",
+      "https://www.adif.es/financiacion-europea/periodo-2021-a-2027",
+      "https://www.adif.es/financiacion-europea/periodos-2006-y-2007-2013",
+      "https://www.adif.es/financiacion-europea/plan-recuperacion-transformacion-resiliencia",
+      "https://www.adif.es/group/adif/~/control_panel/manage?p_p_lifecycle=0&p_p_state=maximized&p_p_mode=view",
+      "https://www.adif.es/inicio",
+      "https://www.adif.es/inicio?p_p_id=es_adif_portlet_ajaxsearch_form_AjaxSearchFormPortlet_INSTANCE_tKIaTRxTNGdR&p_p_lifecycle=1&p_p_state=norm",
+      "https://www.adif.es/inicio?p_p_id=es_adif_portlet_ajaxsearch_form_AjaxSearchFormPortlet_INSTANCE_tKIaTRxTNGdR&p_p_lifecycle=2&p_p_state=norm",
+      "https://www.adif.es/o/admin-theme/images/clay/icons.svg",
+      "https://www.adif.es/o/classic-theme/images",
+      "https://www.adif.es/o/classic-theme/images/clay/icons.svg",
+      "https://www.adif.es/o/classic-theme/js/main.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1784320246000",
+      "https://www.adif.es/o/oauth2/authorize",
+      "https://www.adif.es/o/oauth2/introspect",
+      "https://www.adif.es/o/oauth2/redirect",
+      "https://www.adif.es/o/oauth2/token",
+      "https://www.adif.es/search",
+      "https://www.adif.es/servicios",
+      "https://www.adif.es/servicios/acceso-red",
+      "https://www.adif.es/servicios/acceso-red/acceso-empresas-ferroviarias",
+      "https://www.adif.es/servicios/acceso-red/interoperabilidad",
+      "https://www.adif.es/servicios/acceso-red/marco-europeo-gestion-capacidad",
+      "https://www.adif.es/servicios/acceso-red/procedimientos",
+      "https://www.adif.es/servicios/acceso-red/solicitud-pruebas",
+      "https://www.adif.es/servicios/centro-medico-homologado",
+      "https://www.adif.es/servicios/espacios",
+      "https://www.adif.es/servicios/espacios/estacion-abierta",
+      "https://www.adif.es/servicios/espacios/puntos-recarga",
+      "https://www.adif.es/servicios/espacios/rodajes",
+      "https://www.adif.es/servicios/espacios/trazas-tiempo",
+      "https://www.adif.es/servicios/inmuebles",
+      "https://www.adif.es/servicios/inmuebles/activos-desarrollo",
+      "https://www.adif.es/servicios/inmuebles/alquiler",
+      "https://www.adif.es/servicios/inmuebles/venta",
+      "https://www.adif.es/servicios/mercancias",
+      "https://www.adif.es/servicios/mercancias/autopistas-ferroviarias",
+      "https://www.adif.es/servicios/mercancias/instalaciones-servicio",
+      "https://www.adif.es/servicios/mercancias/prestacion-servicios",
+      "https://www.adif.es/servicios/zonas-afeccion",
+      "https://www.adif.es/sobre-adif",
+      "https://www.adif.es/sobre-adif/actividad-internacional",
+      "https://www.adif.es/sobre-adif/contacto",
+      "https://www.adif.es/sobre-adif/declaracion-red",
+      "https://www.adif.es/sobre-adif/innovacion",
+      "https://www.adif.es/sobre-adif/red-ferroviaria",
+      "https://www.adif.es/sobre-adif/red-ferroviaria/ancho-metrico",
+      "https://www.adif.es/sobre-adif/red-ferroviaria/convencional",
+      "https://www.adif.es/sobre-adif/red-ferroviaria/corredores-europeos",
+      "https://www.adif.es/sobre-adif/red-ferroviaria/mapa",
+      "https://www.adif.es/sobre-adif/seguridad",
+      "https://www.adif.es/sobre-adif/sostenibilidad",
+      "https://www.adif.es/sobre-adif/transparencia",
+      "https://www.adif.es/sobre-adif/transparencia/calidad",
+      "https://www.adif.es/sobre-adif/transparencia/canal-etico"
+    ],
+    "mentions": {
+      "iryo": 1,
+      "ouigo": 0,
+      "salidas": 1,
+      "llegadas": 0,
+      "circulacion": 0,
+      "api": 4
+    }
+  },
+  {
+    "url": "https://www.adif.es/w/60000-madrid-pta.-de-atocha",
+    "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+    "url": "https://www.adif.es/robots.txt",
+    "status": 200,
+    "final_url": "https://www.adif.es/robots.txt",
+    "ctype": "text/plain;charset=UTF-8",
+    "bytes": 143,
+    "api_like_urls": [
+      "https://adif.es/sitemap.xml"
+    ],
+    "mentions": {
+      "iryo": 0,
+      "ouigo": 0,
+      "salidas": 0,
+      "llegadas": 0,
+      "circulacion": 0,
+      "api": 0
+    }
+  },
+  {
+    "url": "https://info.adif.es/",
+    "status": 200,
+    "final_url": "https://info.adif.es/",
+    "ctype": "text/html",
+    "bytes": 986,
+    "api_like_urls": [],
+    "mentions": {
+      "iryo": 0,
+      "ouigo": 0,
+      "salidas": 0,
+      "llegadas": 0,
+      "circulacion": 0,
+      "api": 0
+    }
+  },
+  {
+    "url": "https://datos.gob.es/apidata/catalog/dataset/title/adif%20circulaciones?_pageSize=50",
+    "status": 200,
+    "final_url": "https://datos.gob.es/apidata/catalog/dataset/title/adif%20circulaciones?_pageSize=50",
+    "ctype": "application/json",
+    "bytes": 984,
+    "datasets": []
+  },
+  {
+    "url": "https://datos.gob.es/apidata/catalog/dataset/title/iryo?_pageSize=50",
+    "status": 200,
+    "final_url": "https://datos.gob.es/apidata/catalog/dataset/title/iryo?_pageSize=50",
+    "ctype": "application/json",
+    "bytes": 892,
+    "datasets": []
+  },
+  {
+    "url": "https://datos.gob.es/apidata/catalog/dataset/title/ouigo?_pageSize=50",
+    "status": 200,
+    "final_url": "https://datos.gob.es/apidata/catalog/dataset/title/ouigo?_pageSize=50",
+    "ctype": "application/json",
+    "bytes": 897,
+    "datasets": []
+  },
+  {
+    "url": "https://datos.gob.es/apidata/catalog/dataset/title/trenes%20tiempo%20real?_pageSize=50",
+    "status": 200,
+    "final_url": "https://datos.gob.es/apidata/catalog/dataset/title/trenes%20tiempo%20real?_pageSize=50",
+    "ctype": "application/json",
+    "bytes": 998,
+    "datasets": []
+  }
+]
