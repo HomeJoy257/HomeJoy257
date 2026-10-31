@@ -97,7 +97,9 @@ function upsert(p) {
   const seenMs = Date.parse(p.seen_at);
   const cur = trains.get(id);
   if (cur && cur.seenMs > seenMs) return;
-  trains.set(id, { p: { ...p, id }, coords: [p.longitude, p.latitude], seenMs, sinceMs: p.coord_since ? Date.parse(p.coord_since) : null });
+  // El canal en directo no trae el retraso: se conserva el último conocido
+  const delay = p.delay_s !== undefined ? p.delay_s : cur?.p.delay_s;
+  trains.set(id, { p: { ...p, id, delay_s: delay }, coords: [p.longitude, p.latitude], seenMs, sinceMs: p.coord_since ? Date.parse(p.coord_since) : null });
 }
 
 function render() {
@@ -218,5 +220,6 @@ $("chips").addEventListener("click", (e) => {
 });
 setInterval(render, 1000);
 setInterval(loadStations, 30000);
+setInterval(() => snapshot().catch(() => {}), 60000);   // refresca retrasos oficiales
 setInterval(() => renderSources({}), 5000);
 connect();
