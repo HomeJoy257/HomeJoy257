@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 railradar/probe/probe_sources.py probe_out
+      - run: python3 railradar/probe/probe_gtfs.py probe_out
       - name: Publicar en railradar-data
         run: |
           RUN=probe-$(date -u +%Y%m%dT%H%M)
