@@ -1,6 +1,8 @@
 name: RailRadar · auditoría de datos reales Renfe
 
 on:
+  push:
+    paths: ["railradar/audit/run.json"]     # editar este fichero lanza la auditoría
   workflow_dispatch:
     inputs:
       hours:
@@ -22,13 +24,19 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       parts: ${{ steps.p.outputs.parts }}
+      interval: ${{ steps.p.outputs.interval }}
       minutes: ${{ steps.p.outputs.minutes }}
     steps:
+      - uses: actions/checkout@v4
       - id: p
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import math, json
-          total = float("${{ inputs.hours }}") * 60
+          import math, json, os
+          cfg = json.load(open("railradar/audit/run.json")) if not "${{ inputs.hours }}" else {}
+          hours = float("${{ inputs.hours }}" or cfg.get("hours", 24))
+          interval = int("${{ inputs.interval }}" or cfg.get("interval", 10))
+          print(f"interval={interval}")
+          total = hours * 60
           n = max(1, math.ceil(total / 340))          # trozos de <=340 min (límite job: 360)
           print("parts=" + json.dumps(list(range(1, n + 1))))
           print(f"minutes={total / n:.2f}")
@@ -51,7 +59,7 @@ jobs:
         run: |
           python3 railradar/audit/audit_feeds.py \
             --minutes ${{ needs.plan.outputs.minutes }} \
-            --interval ${{ inputs.interval }} \
+            --interval ${{ needs.plan.outputs.interval }} \
             --raw-every 30 \
             --out out/part-${{ matrix.part }}
       - uses: actions/upload-artifact@v4
