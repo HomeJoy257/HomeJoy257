@@ -129,13 +129,18 @@ def build_tracks(rows):
     """feed -> vehicle -> arrays ordenados por ts (sin duplicados)."""
     by = defaultdict(lambda: defaultdict(list))
     dec = Counter()
+    global no_ts_feeds, ts_by_body
+    no_ts_feeds, ts_by_body = Counter(), defaultdict(set)
     for r in rows:
         try:
             lat, lon = float(r["lat"]), float(r["lon"])
-            ts = datetime.fromisoformat(r["ts"]).timestamp()
             polled = datetime.fromisoformat(r["polled_at"]).timestamp()
+            # sin ts de vehículo: usamos la hora de SONDEO (cota superior, no hora GPS)
+            ts = datetime.fromisoformat(r["ts"]).timestamp() if r.get("ts") else polled
         except (ValueError, TypeError, KeyError):
             continue
+        no_ts_feeds[r["feed"]] += not r.get("ts")
+        ts_by_body[(r["feed"], r.get("raw_sha256"))].add(r.get("ts"))
         if not (27 <= lat <= 45 and -19 <= lon <= 5):
             continue
         dec[min(decimals(r["lat"]), decimals(r["lon"]))] += 1
@@ -227,6 +232,8 @@ def analyze_feed(vehicles, rails=None, max_speed_kmh=360.0):
                     track_gap.append(gap)
                     track_margin.append(margin)
     sigma = pct(noise, 50)
+    if sigma == 0.0:
+        sigma = None          # coordenadas idénticas: no es ruido medible, es dato repetido
     res = {
         "vehicles": len(vehicles), "points": total_pts,
         "age_at_first_seen_s": {"p50": pct(lat_age, 50), "p90": pct(lat_age, 90), "p99": pct(lat_age, 99)},
@@ -235,6 +242,7 @@ def analyze_feed(vehicles, rails=None, max_speed_kmh=360.0):
         "implied_speed_kmh": {"p50": pct(speeds, 50), "p90": pct(speeds, 90), "p99": pct(speeds, 99)},
         "implausible_jumps": implausible, "non_monotonic_ts": nonmono,
         "frozen_repeats": frozen,
+        "frozen_share": share(frozen, pairs),
         "gps_noise_rms_2d_m": {"p50": sigma, "p90": pct(noise, 90), "clusters": len(noise)},
         "direction_determinable": share(dir_ok, pairs),
         "reported_bearing": share(reported_bearing, total_pts),
@@ -322,7 +330,12 @@ def verdict(r):
     out = []
     s = (r.get("gps_noise_rms_2d_m") or {}).get("p50")
     gap = ((r.get("track") or {}).get("parallel_track_separation_m") or {}).get("p50")
-    if s is not None and gap:
+    if r.get("ts_semantics", "").startswith(("SIN", "timestamp de LOTE")):
+        out.append(f"**Timestamp:** {r['ts_semantics']} → la regla de 120 s NO se puede garantizar "
+                   f"(posiciones repetidas: {r.get('frozen_share')})")
+    if s is None:
+        out.append("**Vía:** error GPS no medible (coordenadas repetidas o ajustadas); no se puede afirmar la vía")
+    elif gap:
         out.append("**Vía:** " + ("identificable en general" if s < gap / 4 else
                                   "NO identificable de forma fiable en tramos de doble vía" if s >= gap / 2 else
                                   "dudosa; solo con alta confianza en parte de los puntos"))
@@ -351,6 +364,14 @@ def main():
     summary = {"provenance": prov, "coordinate_decimals": dict(dec), "feeds": {}}
     for feed, vs in tracks.items():
         summary["feeds"][feed] = analyze_feed(vs, rails)
+        bodies = [v for (f, _), v in ts_by_body.items() if f == feed]
+        veh_per_body = len(vs) or 1
+        summary["feeds"][feed]["vehicle_ts_missing"] = no_ts_feeds[feed]
+        summary["feeds"][feed]["distinct_ts_per_response_p50"] = pct([len(b) for b in bodies], 50)
+        summary["feeds"][feed]["ts_semantics"] = (
+            "SIN timestamp por vehículo" if no_ts_feeds[feed] else
+            "timestamp de LOTE (pocos valores por respuesta), no de fijación GPS"
+            if (pct([len(b) for b in bodies], 50) or 0) <= 10 else "timestamp por vehículo")
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False))
 
     md = ["# RailRadar · Análisis de datos reales\n",

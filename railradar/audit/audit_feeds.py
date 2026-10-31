@@ -223,7 +223,8 @@ class Tracker:
 
 # ---------------------------------------------------------------- Bucle
 TRACK_COLS = ["feed", "vehicle_id", "entity_id", "label", "trip_id", "route_id", "direction_id",
-              "ts", "lat", "lon", "bearing", "speed", "status", "stop_id", "polled_at", "raw_sha256"]
+              "ts", "lat", "lon", "bearing", "speed", "status", "stop_id", "polled_at", "raw_sha256",
+              "header_ts", "last_modified"]
 
 
 def poll(feeds, duration_s, interval_s, out: Path, trackers, errors, raw_every=1):
@@ -274,15 +275,21 @@ def _loop(L):
                         d = out / "raw" / name
                         d.mkdir(parents=True, exist_ok=True)
                         (d / f"{now:%Y%m%dT%H%M%S}_{h[:12]}.json.gz").write_bytes(gzip.compress(body))
+                    if new_bodies[name] <= 3 or new_bodies[name] % 360 == 0:   # muestras para el repo
+                        sd = out / "raw_samples" / name
+                        sd.mkdir(parents=True, exist_ok=True)
+                        (sd / f"{now:%Y%m%dT%H%M%S}_{h[:12]}.json.gz").write_bytes(gzip.compress(body))
                     for v in vehicles:
-                        k = (v["vehicle_id"] or v["entity_id"], v["ts"])
-                        if v["ts"] is None or k in seen[name]:
+                        # sin ts de vehículo (p. ej. feed LD): se registra cuando cambia la coordenada
+                        k = (v["vehicle_id"] or v["entity_id"], v["ts"] or (v["lat"], v["lon"]))
+                        if k in seen[name]:
                             continue
                         seen[name].add(k)
                         tw.writerow([name, v["vehicle_id"], v["entity_id"], v["label"], v["trip_id"],
-                                     v["route_id"], v["direction_id"], v["ts"].isoformat(), v["lat"],
-                                     v["lon"], v["bearing"], v["speed"], v["status"], v["stop_id"],
-                                     now.isoformat(), h])
+                                     v["route_id"], v["direction_id"], v["ts"].isoformat() if v["ts"] else "",
+                                     v["lat"], v["lon"], v["bearing"], v["speed"], v["status"], v["stop_id"],
+                                     now.isoformat(), h, header_ts.isoformat() if header_ts else "",
+                                     headers.get("Last-Modified") or ""])
                     tracks_f.flush()
                 rec.update(analyze(header_ts, vehicles, now))
                 rec["header_ts"] = header_ts.isoformat() if header_ts else None

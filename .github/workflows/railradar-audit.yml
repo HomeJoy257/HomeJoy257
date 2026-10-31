@@ -105,6 +105,7 @@ jobs:
             cp "$d/tracks.csv.gz" pub/$RUN/$p/ 2>/dev/null || true
             gzip -c "$d/samples.jsonl" > pub/$RUN/$p/samples.jsonl.gz 2>/dev/null || true
             cp "$d/feeds.json" "$d/report.md" pub/$RUN/$p/ 2>/dev/null || true
+            cp -r "$d/raw_samples" pub/$RUN/$p/ 2>/dev/null || true
           done
           git config user.name "railradar-bot"
           git config user.email "railradar-bot@users.noreply.github.com"
