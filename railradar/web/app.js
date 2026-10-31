@@ -29,9 +29,9 @@ function addLayers() {
   map.addLayer({ id: "stations", type: "circle", source: "stations",
     paint: { "circle-radius": ["interpolate", ["linear"], ["get", "count"], 1, 10, 10, 18],
              "circle-color": COLORS.station, "circle-opacity": 0.28, "circle-stroke-color": COLORS.station, "circle-stroke-width": 2.5 } });
-  map.addLayer({ id: "stations-count", type: "symbol", source: "stations", minzoom: 7,
-    layout: { "text-field": ["concat", ["get", "name"], " · ", ["to-string", ["get", "count"]]], "text-size": 11,
-              "text-offset": [0, 1.6], "text-anchor": "top", "text-optional": true },
+  map.addLayer({ id: "stations-count", type: "symbol", source: "stations", minzoom: 9,
+    layout: { "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.4], "text-anchor": "top",
+              "text-font": ["Noto Sans Regular"] },
     paint: { "text-color": COLORS.station, "text-halo-color": "#fff", "text-halo-width": 1.5 } });
   map.addLayer({ id: "trains", type: "circle", source: "trains",
     paint: {
@@ -41,8 +41,13 @@ function addLayers() {
       "circle-stroke-color": ["case", ["boolean", ["feature-state", "sel"], false], COLORS.station, "#fff"],
       "circle-stroke-width": ["case", ["boolean", ["feature-state", "sel"], false], 3, 1.5],
     } });
-  map.on("click", "trains", (e) => selectTrain(e.features[0].properties.id));
-  map.on("click", "stations", (e) => { if (!map.queryRenderedFeatures(e.point, { layers: ["trains"] }).length) selectStation(e.features[0].properties.stop_id); });
+  map.on("click", (e) => {
+    const box = [[e.point.x - 6, e.point.y - 6], [e.point.x + 6, e.point.y + 6]];
+    const t = map.queryRenderedFeatures(box, { layers: ["trains"] });
+    if (t.length) return selectTrain(t[0].properties.id);
+    const s = map.queryRenderedFeatures(box, { layers: ["stations"] });
+    if (s.length) return selectStation(String(s[0].properties.stop_id));
+  });
   for (const l of ["trains", "stations"]) {
     map.on("mouseenter", l, () => (map.getCanvas().style.cursor = "pointer"));
     map.on("mouseleave", l, () => (map.getCanvas().style.cursor = ""));
@@ -92,9 +97,10 @@ function upsert(p) {
 function render() {
   const src = map.getSource("trains");
   if (src) src.setData(trainsFC()); else trainsFC();
+  const vis = visibleStations();
   const st = map.getSource("stations");
-  if (st) st.setData(show.st ? stationsFC : { type: "FeatureCollection", features: [] });
-  $("k-st").textContent = stationsFC.features.length;
+  if (st) st.setData(show.st ? vis : { type: "FeatureCollection", features: [] });
+  $("k-st").textContent = vis.features.length;
   if (selected) renderTrain();
 }
 
@@ -105,6 +111,16 @@ async function snapshot() {
   for (const f of j.features) upsert({ ...f.properties, longitude: f.geometry.coordinates[0], latitude: f.geometry.coordinates[1] });
   render();
 }
+// Estaciones: solo eventos de las capas de tren encendidas (AVE/LD/MD y/o Cercanías)
+function visibleStations() {
+  const features = [];
+  for (const f of stationsFC.features) {
+    const evs = f.properties.events.filter((e) => (e.source === "renfe_cercanias" ? show.cer : show.ld));
+    if (evs.length) features.push({ ...f, properties: { ...f.properties, count: evs.length, events: evs } });
+  }
+  return { type: "FeatureCollection", features };
+}
+
 async function loadStations() {
   try {
     stationsFC = await (await fetch(`${API}/api/v1/stations/events`, { cache: "no-store" })).json();
@@ -154,11 +170,12 @@ function renderTrain() {
 
 function selectStation(stopId) {
   selectTrain(null); selectedStation = stopId;
+  if (stopId) setTimeout(() => $("details").scrollIntoView({ block: "nearest" }), 0);
   $("details").hidden = !stopId; if (stopId) renderStation();
 }
 function renderStation() {
-  const f = stationsFC.features.find((x) => x.properties.stop_id === selectedStation); if (!f) return;
-  const p = f.properties, evs = typeof p.events === "string" ? JSON.parse(p.events) : p.events;
+  const f = visibleStations().features.find((x) => x.properties.stop_id === selectedStation); if (!f) return;
+  const p = f.properties, evs = p.events;
   $("d-id").textContent = p.name;
   $("d-body").innerHTML = `<dt>Trenes</dt><dd><ul class="evs">${evs.map((e) =>
     `<li><span>${esc(e.label || e.train.split(":")[1])}<br><small>${e.status === "STOPPED_AT" ? "parado" : "llegando"} · hace ${e.minutes_ago} min</small></span>${fmtDelay(e.delay_s)}</li>`).join("")}</ul></dd>

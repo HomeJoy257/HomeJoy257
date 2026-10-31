@@ -165,7 +165,14 @@ async def stream(request: Request):
                 yield f"event: {msg['event']}\ndata: {json.dumps(msg['data'])}\n\n"
         finally:
             nxt.cancel()
-            await sub.aclose()
+            try:
+                await nxt
+            except (asyncio.CancelledError, StopAsyncIteration, Exception):
+                pass
+            try:
+                await sub.aclose()
+            except RuntimeError:
+                pass
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})

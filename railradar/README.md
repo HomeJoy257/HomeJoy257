@@ -52,14 +52,19 @@ cd railradar/backend && python3 -m pytest -q
 | `GET /api/v1/stream` | SSE: `hello`, `train.position`, `source.status` |
 | `GET /health/live`, `/health/ready` | Salud |
 
-## Reglas de datos (no negociables)
-- Solo `vehicle.timestamp` del feed. Sin él → descartado.
-- `vehicle.timestamp == header.timestamp` → descartado por defecto (podría ser la hora del fichero).
-  Activar `TRUST_TS_EQUAL_HEADER=1` solo tras verificarlo con `audit/audit_feeds.py`.
-- Antigüedad > 120 s, futura (>5 s), `0,0` o fuera de España → descartado.
-- Nunca se sustituye una posición por estación, tramo u horario.
-- Redis nunca acepta una posición más vieja que la que ya tiene.
-- El navegador elimina el tren a los 120 s con su propio reloj (sincronizado con el servidor), aunque se corte el SSE.
+## Reglas de datos (tras auditar Renfe con datos reales)
+La auditoría del 31-10-2026 mostró que el `timestamp` de Cercanías es de **lote**
+(no de la fijación GPS) y que AV/LD/MD **no trae hora por tren**. Por eso:
+- La edad se mide desde que RailRadar **ve cambiar la coordenada**, no con la hora del feed.
+- **Cercanías** (`strict`): solo se muestra si la coordenada cambió hace ≤120 s, o si Renfe dice `STOPPED_AT`.
+  Al arrancar, hasta ver el primer cambio, la edad es desconocida y no se muestra.
+- **AVE/LD/MD** (`unknown_age`): siempre en **gris**, rotulado "Renfe no publica la hora".
+- **Estaciones**: evento real `STOPPED_AT`/`INCOMING_AT` del feed + retraso oficial (`trip_updates`).
+  Coordenadas de estación del GTFS oficial de Renfe. Nunca se dibuja un tren entre estaciones.
+- Un tren que deja de aparecer en el feed se retira a los 90 s.
+- Coordenadas `0,0` o fuera de España → descartadas. Sin interpolación ni ajuste a la vía.
+- **Solo Renfe**: Iryo y Ouigo no publican datos abiertos; Adif no tiene dataset abierto.
+- **No apto para seguridad ferroviaria.**
 
 ## Mapa
 - Teselas: OpenFreeMap (gratis, sin clave). Cambiar con `?style=https://…/style.json`.
