@@ -1,0 +1,22 @@
+name: RailRadar · sondeo de fuentes
+on:
+  push:
+    paths: ["railradar/probe/probe.json"]
+permissions:
+  contents: write
+concurrency: { group: railradar-probe, cancel-in-progress: false }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 railradar/probe/probe_sources.py probe_out
+      - name: Publicar en railradar-data
+        run: |
+          RUN=probe-$(date -u +%Y%m%dT%H%M)
+          git config user.name "railradar-bot"; git config user.email "railradar-bot@users.noreply.github.com"
+          mkdir -p /tmp/pub && cp -r probe_out /tmp/pub/$RUN
+          git fetch origin railradar-data && git checkout -q -B railradar-data origin/railradar-data
+          cp -r /tmp/pub/$RUN . && git add $RUN && git commit -qm "Sondeo fuentes: $RUN"
+          for i in 1 2 3 4; do git pull -q --rebase origin railradar-data; git push origin railradar-data && break || sleep $((2**i)); done
