@@ -1,0 +1,1209 @@
+{
+ "files": [
+  "agency.txt",
+  "calendar_dates.txt",
+  "calendar.txt",
+  "routes.txt",
+  "stops.txt",
+  "stop_times.txt",
+  "trips.txt"
+ ],
+ "agency.txt_head": [
+  {
+   "agency_id": "1071",
+   "agency_name": "RENFE OPERADORA",
+   "agency_url": "http://www.renfe.com",
+   "agency_timezone": "Europe/Madrid",
+   "agency_lang": "ES",
+   "agency_phone                                                                                                                                                                                                                                                                                     ": "902320320                                                                                                                                                                                                                                                                                          "
+  }
+ ],
+ "calendar_dates.txt_head": [
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "date": "20261107",
+   "exception_type                                                                                                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                                                         "
+  },
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "date": "20261108",
+   "exception_type                                                                                                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                                                         "
+  },
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "date": "20261114",
+   "exception_type                                                                                                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                                                         "
+  },
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "date": "20261115",
+   "exception_type                                                                                                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                                                         "
+  },
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "date": "20261121",
+   "exception_type                                                                                                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                                                         "
+  }
+ ],
+ "calendar.txt_head": [
+  {
+   "service_id": "2026-11-032026-11-03001901",
+   "monday": "1",
+   "tuesday": "1",
+   "wednesday": "1",
+   "thursday": "1",
+   "friday": "1",
+   "saturday": "1",
+   "sunday": "1",
+   "start_date": "20261103",
+   "end_date                                                                                                                                                                                                                                                                       ": "20261103                                                                                                                                                                                                                                                                                                    "
+  },
+  {
+   "service_id": "2026-11-042026-12-07001901",
+   "monday": "1",
+   "tuesday": "1",
+   "wednesday": "1",
+   "thursday": "1",
+   "friday": "1",
+   "saturday": "1",
+   "sunday": "1",
+   "start_date": "20261104",
+   "end_date                                                                                                                                                                                                                                                                       ": "20261207                                                                                                                                                                                                                                                                                                    "
+  },
+  {
+   "service_id": "2026-12-092026-12-12001901",
+   "monday": "1",
+   "tuesday": "1",
+   "wednesday": "1",
+   "thursday": "1",
+   "friday": "1",
+   "saturday": "1",
+   "sunday": "1",
+   "start_date": "20261209",
+   "end_date                                                                                                                                                                                                                                                                       ": "20261212                                                                                                                                                                                                                                                                                                    "
+  },
+  {
+   "service_id": "2026-12-132026-12-24001901",
+   "monday": "1",
+   "tuesday": "1",
+   "wednesday": "1",
+   "thursday": "1",
+   "friday": "1",
+   "saturday": "1",
+   "sunday": "1",
+   "start_date": "20261213",
+   "end_date                                                                                                                                                                                                                                                                       ": "20261224                                                                                                                                                                                                                                                                                                    "
+  },
+  {
+   "service_id": "2026-12-262026-12-31001901",
+   "monday": "1",
+   "tuesday": "1",
+   "wednesday": "1",
+   "thursday": "1",
+   "friday": "1",
+   "saturday": "1",
+   "sunday": "1",
+   "start_date": "20261226",
+   "end_date                                                                                                                                                                                                                                                                       ": "20261231                                                                                                                                                                                                                                                                                                    "
+  }
+ ],
+ "routes.txt_head": [
+  {
+   "route_id": "1700037606GL023",
+   "agency_id": "1071",
+   "route_short_name": "ALVIA",
+   "route_long_name": "",
+   "route_desc": "",
+   "route_type": "2",
+   "route_url": "",
+   "route_color": "F2F5F5",
+   "route_text_color                                                                                                                                                                                                                                              ": "                                                                                                                                                                                                                                                                                                                       "
+  },
+  {
+   "route_id": "1120013200GL026",
+   "agency_id": "1071",
+   "route_short_name": "Intercity",
+   "route_long_name": "",
+   "route_desc": "",
+   "route_type": "2",
+   "route_url": "",
+   "route_color": "F2F5F5",
+   "route_text_color                                                                                                                                                                                                                                              ": "                                                                                                                                                                                                                                                                                                                   "
+  },
+  {
+   "route_id": "1151111208GL026",
+   "agency_id": "1071",
+   "route_short_name": "Intercity",
+   "route_long_name": "",
+   "route_desc": "",
+   "route_type": "2",
+   "route_url": "",
+   "route_color": "F2F5F5",
+   "route_text_color                                                                                                                                                                                                                                              ": "                                                                                                                                                                                                                                                                                                                   "
+  },
+  {
+   "route_id": "1120811511GL026",
+   "agency_id": "1071",
+   "route_short_name": "Intercity",
+   "route_long_name": "",
+   "route_desc": "",
+   "route_type": "2",
+   "route_url": "",
+   "route_color": "F2F5F5",
+   "route_text_color                                                                                                                                                                                                                                              ": "                                                                                                                                                                                                                                                                                                                   "
+  },
+  {
+   "route_id": "1320011200GL026",
+   "agency_id": "1071",
+   "route_short_name": "Intercity",
+   "route_long_name": "",
+   "route_desc": "",
+   "route_type": "2",
+   "route_url": "",
+   "route_color": "F2F5F5",
+   "route_text_color                                                                                                                                                                                                                                              ": "                                                                                                                                                                                                                                                                                                                   "
+  }
+ ],
+ "stops.txt_head": [
+  {
+   "stop_id": "17000",
+   "stop_code": "",
+   "stop_name": "Madrid-Chamartín-Clara Campoamor",
+   "stop_desc": "",
+   "stop_lat": "40.4711789",
+   "stop_lon": "-3.6829524",
+   "zone_id": "",
+   "stop_url": "",
+   "location_type": "",
+   "parent_station": "",
+   "stop_timezone": "Europe/Madrid",
+   "wheelchair_boarding                                                                                                                                                                                                                       ": "1                                                                                                                                                                                                                                                                            "
+  },
+  {
+   "stop_id": "37606",
+   "stop_code": "",
+   "stop_name": "Badajoz",
+   "stop_desc": "",
+   "stop_lat": "38.8906960",
+   "stop_lon": "-6.9817530",
+   "zone_id": "",
+   "stop_url": "",
+   "location_type": "",
+   "parent_station": "",
+   "stop_timezone": "Europe/Madrid",
+   "wheelchair_boarding                                                                                                                                                                                                                       ": "1                                                                                                                                                                                                                                                                                                     "
+  },
+  {
+   "stop_id": "37603",
+   "stop_code": "",
+   "stop_name": "Montijo",
+   "stop_desc": "",
+   "stop_lat": "38.9135390",
+   "stop_lon": "-6.5985770",
+   "zone_id": "",
+   "stop_url": "",
+   "location_type": "",
+   "parent_station": "",
+   "stop_timezone": "Europe/Madrid",
+   "wheelchair_boarding                                                                                                                                                                                                                       ": "2                                                                                                                                                                                                                                                                                                     "
+  },
+  {
+   "stop_id": "37500",
+   "stop_code": "",
+   "stop_name": "Mérida",
+   "stop_desc": "",
+   "stop_lat": "38.9215030",
+   "stop_lon": "-6.3437940",
+   "zone_id": "",
+   "stop_url": "",
+   "location_type": "",
+   "parent_station": "",
+   "stop_timezone": "Europe/Madrid",
+   "wheelchair_boarding                                                                                                                                                                                                                       ": "1                                                                                                                                                                                                                                                                                                      "
+  },
+  {
+   "stop_id": "35400",
+   "stop_code": "",
+   "stop_name": "Cáceres",
+   "stop_desc": "",
+   "stop_lat": "39.4611310",
+   "stop_lon": "-6.3856790",
+   "zone_id": "",
+   "stop_url": "",
+   "location_type": "",
+   "parent_station": "",
+   "stop_timezone": "Europe/Madrid",
+   "wheelchair_boarding                                                                                                                                                                                                                       ": "1                                                                                                                                                                                                                                                                                                     "
+  }
+ ],
+ "stop_times.txt_head": [
+  {
+   "trip_id": "0019012026-11-03",
+   "arrival_time": "8:30:00",
+   "departure_time": "8:30:00",
+   "stop_id": "17000",
+   "stop_sequence": "01",
+   "stop_headsign": "",
+   "pickup_type": "0",
+   "drop_off_type": "1",
+   "shape_dist_traveled                                                                                                                                                                                                                                         ": "                                                                                                                                                                                                                                                                                                               "
+  },
+  {
+   "trip_id": "0019012026-11-03",
+   "arrival_time": "8:43:00",
+   "departure_time": "8:51:00",
+   "stop_id": "18000",
+   "stop_sequence": "02",
+   "stop_headsign": "",
+   "pickup_type": "0",
+   "drop_off_type": "1",
+   "shape_dist_traveled                                                                                                                                                                                                                                         ": "                                                                                                                                                                                                                                                                                                               "
+  },
+  {
+   "trip_id": "0019012026-11-03",
+   "arrival_time": "9:07:00",
+   "departure_time": "9:08:00",
+   "stop_id": "35001",
+   "stop_sequence": "03",
+   "stop_headsign": "",
+   "pickup_type": "0",
+   "drop_off_type": "1",
+   "shape_dist_traveled                                                                                                                                                                                                                                         ": "                                                                                                                                                                                                                                                                                                               "
+  },
+  {
+   "trip_id": "0019012026-11-03",
+   "arrival_time": "9:47:00",
+   "departure_time": "9:48:00",
+   "stop_id": "35105",
+   "stop_sequence": "04",
+   "stop_headsign": "",
+   "pickup_type": "0",
+   "drop_off_type": "0",
+   "shape_dist_traveled                                                                                                                                                                                                                                         ": "                                                                                                                                                                                                                                                                                                               "
+  },
+  {
+   "trip_id": "0019012026-11-03",
+   "arrival_time": "10:15:00",
+   "departure_time": "10:17:00",
+   "stop_id": "35200",
+   "stop_sequence": "05",
+   "stop_headsign": "",
+   "pickup_type": "0",
+   "drop_off_type": "0",
+   "shape_dist_traveled                                                                                                                                                                                                                                         ": "                                                                                                                                                                                                                                                                                                             "
+  }
+ ],
+ "trips.txt_head": [
+  {
+   "route_id": "1700037606GL023",
+   "service_id": "2026-11-032026-11-03001901",
+   "trip_id": "0019012026-11-03",
+   "trip_headsign": "",
+   "trip_short_name": "00190",
+   "direction_id": "",
+   "block_id": "",
+   "shape_id": "",
+   "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+  },
+  {
+   "route_id": "1700037606GL023",
+   "service_id": "2026-11-042026-12-07001901",
+   "trip_id": "0019012026-11-04",
+   "trip_headsign": "",
+   "trip_short_name": "00190",
+   "direction_id": "",
+   "block_id": "",
+   "shape_id": "",
+   "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+  },
+  {
+   "route_id": "1700037606GL023",
+   "service_id": "2026-12-092026-12-12001901",
+   "trip_id": "0019012026-12-09",
+   "trip_headsign": "",
+   "trip_short_name": "00190",
+   "direction_id": "",
+   "block_id": "",
+   "shape_id": "",
+   "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+  },
+  {
+   "route_id": "1700037606GL023",
+   "service_id": "2026-12-132026-12-24001901",
+   "trip_id": "0019012026-12-13",
+   "trip_headsign": "",
+   "trip_short_name": "00190",
+   "direction_id": "",
+   "block_id": "",
+   "shape_id": "",
+   "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+  },
+  {
+   "route_id": "1700037606GL023",
+   "service_id": "2026-12-262026-12-31001901",
+   "trip_id": "0019012026-12-26",
+   "trip_headsign": "",
+   "trip_short_name": "00190",
+   "direction_id": "",
+   "block_id": "",
+   "shape_id": "",
+   "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+  }
+ ],
+ "route_short_names": [
+  [
+   "MD",
+   139
+  ],
+  [
+   "REGIONAL",
+   102
+  ],
+  [
+   "REG.EXP.",
+   102
+  ],
+  [
+   "AVE",
+   82
+  ],
+  [
+   "ALVIA",
+   80
+  ],
+  [
+   "Intercity",
+   53
+  ],
+  [
+   "PROXIMDAD",
+   36
+  ],
+  [
+   "AVANT",
+   33
+  ],
+  [
+   "AVLO",
+   24
+  ],
+  [
+   "AVE INT",
+   10
+  ],
+  [
+   "EUROMED",
+   7
+  ],
+  [
+   "TRENCELTA",
+   2
+  ],
+  [
+   "AVANT EXP",
+   2
+  ]
+ ],
+ "route_long_sample": [
+  [
+   "1700037606GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1120013200GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1151111208GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1120811511GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1320011200GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "3760617000GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "2230894346GL026",
+   "TRENCELTA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "9434622308GL026",
+   "TRENCELTA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1320071801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "0404071801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1320011200GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180113200GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180104040GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1120013200GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "6500071801GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180165000GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180111511GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1151171801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1151178400GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "2030922100GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "2210020309GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180180100GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "8010071801GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "8010060000GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "6000080100GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "0822371801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "2210071801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "0822311208GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1510071801GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "0404078400GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180108223GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180122100GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7840008223GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "7180115100GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1120815100GL023",
+   "ALVIA",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "3010004040GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "3010010600GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1060004040GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "1120004040GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ],
+  [
+   "0404030100GL026",
+   "Intercity",
+   "",
+   "",
+   "2"
+  ]
+ ],
+ "agencies": [
+  {
+   "agency_id": "1071",
+   "agency_name": "RENFE OPERADORA",
+   "agency_url": "http://www.renfe.com",
+   "agency_timezone": "Europe/Madrid",
+   "agency_lang": "ES",
+   "agency_phone                                                                                                                                                                                                                                                                                     ": "902320320                                                                                                                                                                                                                                                                                          "
+  }
+ ],
+ "rt_vs_gtfs": {
+  "exact_trip_id": 156,
+  "by_number_prefix": 156
+ },
+ "rt_entities": 156,
+ "sample": [
+  {
+   "rt_trip_id": "1440112026-10-31",
+   "label": "14401",
+   "gtfs_trip": {
+    "route_id": "6500060600VRR",
+    "service_id": "2026-10-312026-11-01144011",
+    "trip_id": "1440112026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "14401",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REGIONAL",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0874412026-10-31",
+   "label": "08744",
+   "gtfs_trip": {
+    "route_id": "5441351003AV008",
+    "service_id": "2026-10-312026-11-03087441",
+    "trip_id": "0874412026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "08744",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVANT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1440512026-10-31",
+   "label": "14405",
+   "gtfs_trip": {
+    "route_id": "6500060600VRX",
+    "service_id": "2026-10-312026-12-12144051",
+    "trip_id": "1440512026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "14405",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0913212026-10-31",
+   "label": "09132",
+   "gtfs_trip": {
+    "route_id": "0822331412VRX",
+    "service_id": "2026-10-312026-11-04091321",
+    "trip_id": "0913212026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09132",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0913222026-10-31",
+   "label": "09132",
+   "gtfs_trip": {
+    "route_id": "0822331412VRX",
+    "service_id": "2026-10-312026-11-04091322",
+    "trip_id": "0913222026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09132",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1501212026-10-31",
+   "label": "15012",
+   "gtfs_trip": {
+    "route_id": "7140079400VRE",
+    "service_id": "2026-10-312026-11-03150121",
+    "trip_id": "1501212026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15012",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REG.EXP.",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0914012026-10-31",
+   "label": "09140",
+   "gtfs_trip": {
+    "route_id": "2210031412AV008",
+    "service_id": "2026-10-312026-11-04091401",
+    "trip_id": "0914012026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09140",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVANT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0914312026-10-31",
+   "label": "09143",
+   "gtfs_trip": {
+    "route_id": "3141208223VRX",
+    "service_id": "2026-10-312026-11-04091431",
+    "trip_id": "0914312026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09143",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "1                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1503312026-10-31",
+   "label": "15033",
+   "gtfs_trip": {
+    "route_id": "7940071400VRE",
+    "service_id": "2026-10-312026-11-03150331",
+    "trip_id": "1503312026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15033",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REG.EXP.",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0915312026-10-31",
+   "label": "09153",
+   "gtfs_trip": {
+    "route_id": "3141208223VRX",
+    "service_id": "2026-10-312026-11-04091531",
+    "trip_id": "0915312026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09153",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0915512026-10-31",
+   "label": "09155",
+   "gtfs_trip": {
+    "route_id": "6091161200VRD",
+    "service_id": "2026-10-312026-11-03091551",
+    "trip_id": "0915512026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09155",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "AVANT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1504312026-10-31",
+   "label": "15043",
+   "gtfs_trip": {
+    "route_id": "7940078400VRE",
+    "service_id": "2026-10-312026-11-03150431",
+    "trip_id": "1504312026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15043",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REG.EXP.",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0915712026-10-31",
+   "label": "09157",
+   "gtfs_trip": {
+    "route_id": "6120060911VRD",
+    "service_id": "2026-10-312026-11-03091571",
+    "trip_id": "0915712026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09157",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "AVANT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1505212026-10-31",
+   "label": "15052",
+   "gtfs_trip": {
+    "route_id": "7840079400VRE",
+    "service_id": "2026-10-312026-11-03150521",
+    "trip_id": "1505212026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15052",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REG.EXP.",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0972512026-10-31",
+   "label": "09725",
+   "gtfs_trip": {
+    "route_id": "6000087089AV016",
+    "service_id": "2026-10-312026-11-03097251",
+    "trip_id": "0972512026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09725",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0972522026-10-31",
+   "label": "09725",
+   "gtfs_trip": {
+    "route_id": "6000071801AV016",
+    "service_id": "2026-10-312026-11-03097252",
+    "trip_id": "0972522026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09725",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0972532026-10-31",
+   "label": "09725",
+   "gtfs_trip": {
+    "route_id": "0430787089AV016",
+    "service_id": "2026-10-312026-11-03097253",
+    "trip_id": "0972532026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09725",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1581012026-10-31",
+   "label": "15810",
+   "gtfs_trip": {
+    "route_id": "7180179315VRX",
+    "service_id": "2026-10-312026-12-06158101",
+    "trip_id": "1581012026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15810",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1586212026-10-31",
+   "label": "15862",
+   "gtfs_trip": {
+    "route_id": "7931571801VRR",
+    "service_id": "2026-10-312026-12-12158621",
+    "trip_id": "1586212026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15862",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REGIONAL",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0973012026-10-31",
+   "label": "09730",
+   "gtfs_trip": {
+    "route_id": "8708960000AV016",
+    "service_id": "2026-10-312026-11-03097301",
+    "trip_id": "0973012026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09730",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0973022026-10-31",
+   "label": "09730",
+   "gtfs_trip": {
+    "route_id": "8708904307AV016",
+    "service_id": "2026-10-312026-11-03097302",
+    "trip_id": "0973022026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09730",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0973032026-10-31",
+   "label": "09730",
+   "gtfs_trip": {
+    "route_id": "7180160000AV016",
+    "service_id": "2026-10-312026-11-03097303",
+    "trip_id": "0973032026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09730",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1586412026-10-31",
+   "label": "15864",
+   "gtfs_trip": {
+    "route_id": "7931571801VRX",
+    "service_id": "2026-10-312026-12-12158641",
+    "trip_id": "1586412026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15864",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "MD",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "1586612026-10-31",
+   "label": "15866",
+   "gtfs_trip": {
+    "route_id": "7931571801VRR",
+    "service_id": "2026-10-312026-12-12158661",
+    "trip_id": "1586612026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "15866",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                         "
+   },
+   "route_short_name": "REGIONAL",
+   "route_long_name": ""
+  },
+  {
+   "rt_trip_id": "0974212026-10-31",
+   "label": "09742",
+   "gtfs_trip": {
+    "route_id": "8730371801AV016",
+    "service_id": "2026-10-312026-11-03097421",
+    "trip_id": "0974212026-10-31",
+    "trip_headsign": "",
+    "trip_short_name": "09742",
+    "direction_id": "",
+    "block_id": "",
+    "shape_id": "",
+    "wheelchair_accessible                                                                                                                                                                                                                                                ": "2                                                                                                                                                                                                                                                                                       "
+   },
+   "route_short_name": "AVE INT",
+   "route_long_name": ""
+  }
+ ],
+ "rt_vp_example": [
+  {
+   "id": "VP_14401",
+   "vehicle": {
+    "trip": {
+     "tripId": "1440112026-10-31"
+    },
+    "position": {
+     "latitude": 39.050217,
+     "longitude": -0.47729987
+    },
+    "currentStatus": "IN_TRANSIT_TO",
+    "stopId": "64100",
+    "vehicle": {
+     "id": "14401",
+     "label": "14401"
+    }
+   }
+  },
+  {
+   "id": "VP_08744",
+   "vehicle": {
+    "trip": {
+     "tripId": "0874412026-10-31"
+    },
+    "position": {
+     "latitude": 37.74471,
+     "longitude": -5.0191984
+    },
+    "currentStatus": "IN_TRANSIT_TO",
+    "stopId": "51003",
+    "vehicle": {
+     "id": "08744",
+     "label": "08744"
+    }
+   }
+  }
+ ],
+ "rt_tu_example": [
+  {
+   "id": "TUUPDATE_0146012026-11-01",
+   "tripUpdate": {
+    "trip": {
+     "tripId": "0146012026-11-01",
+     "scheduleRelationship": "SCHEDULED"
+    },
+    "stopTimeUpdate": [
+     {
+      "arrival": {
+       "delay": 4740,
+       "time": "1793538850"
+      },
+      "stopId": "62103"
+     }
+    ],
+    "delay": 4740
+   }
+  },
+  {
+   "id": "TUUPDATE_0146022026-11-01",
+   "tripUpdate": {
+    "trip": {
+     "tripId": "0146022026-11-01",
+     "scheduleRelationship": "SCHEDULED"
+    },
+    "stopTimeUpdate": [
+     {
+      "arrival": {
+       "delay": 4740,
+       "time": "1793538850"
+      },
+      "stopId": "62103"
+     }
+    ],
+    "delay": 4740
+   }
+  }
+ ]
+}
