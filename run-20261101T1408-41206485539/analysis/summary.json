@@ -1,0 +1,146 @@
+{
+  "provenance": {
+    "polls_ok": 17213,
+    "polls_error": 25,
+    "http_codes": {
+      "200": 17213
+    },
+    "hosts": {
+      "gtfsrt.renfe.com": 17213
+    },
+    "unofficial_hosts": {},
+    "raw_files_verified": 339,
+    "raw_files_mismatch": 0,
+    "first_poll": "2026-10-31T13:38:47.558582+00:00",
+    "last_poll": "2026-11-01T13:39:56.085427+00:00",
+    "ts_equals_header_ratio": 0.1411
+  },
+  "coordinate_decimals": {
+    "6": 560454,
+    "5": 446268,
+    "4": 48582,
+    "3": 5342,
+    "2": 75,
+    "0": 1,
+    "1": 11
+  },
+  "feeds": {
+    "cercanias": {
+      "vehicles": 3019,
+      "points": 852596,
+      "age_at_first_seen_s": {
+        "p50": 11.2,
+        "p90": 16.1,
+        "p99": 21.3
+      },
+      "share_age_le_120s": "99.9 %",
+      "update_interval_s": {
+        "p50": 20.0,
+        "p90": 21.0
+      },
+      "implied_speed_kmh": {
+        "p50": 65.4,
+        "p90": 441.8,
+        "p99": 3916.6
+      },
+      "implausible_jumps": 21311,
+      "non_monotonic_ts": 0,
+      "frozen_repeats": 690323,
+      "frozen_share": "81.3 %",
+      "gps_noise_rms_2d_m": {
+        "p50": null,
+        "p90": 0.0,
+        "clusters": 23546
+      },
+      "direction_determinable": "16.1 %",
+      "reported_bearing": "0.0 %",
+      "reported_speed": "0.0 %",
+      "direction_id_present": "0.0 %",
+      "bearing_vs_computed_deg": {
+        "p50": null,
+        "p90": null,
+        "n": 0
+      },
+      "direction_reversals": 18679,
+      "travel_since_observation_m": {
+        "p50": 0.0,
+        "p90": 187.9,
+        "p99": 1984.4
+      },
+      "track": {
+        "points": 852596,
+        "within_10m_of_rail": "79.8 %",
+        "within_25m_of_rail": "84.8 %",
+        "far_gt_50m": "11.9 %",
+        "multi_track_zone": "78.9 %",
+        "track_identifiable_in_multi": "sin σ",
+        "parallel_track_separation_m": {
+          "p50": 4.2,
+          "p10": 3.5
+        }
+      },
+      "vehicle_ts_missing": 0,
+      "distinct_ts_per_response_p50": 3.0,
+      "ts_semantics": "timestamp de LOTE (pocos valores por respuesta), no de fijación GPS"
+    },
+    "larga_distancia": {
+      "vehicles": 686,
+      "points": 208137,
+      "age_at_first_seen_s": {
+        "p50": 0.0,
+        "p90": 0.0,
+        "p99": 0.0
+      },
+      "share_age_le_120s": "100.0 %",
+      "update_interval_s": {
+        "p50": 19.9,
+        "p90": 30.2
+      },
+      "implied_speed_kmh": {
+        "p50": 83.7,
+        "p90": 241.1,
+        "p99": 669.8
+      },
+      "implausible_jumps": 8035,
+      "non_monotonic_ts": 237,
+      "frozen_repeats": 109,
+      "frozen_share": "0.1 %",
+      "gps_noise_rms_2d_m": {
+        "p50": 20.4,
+        "p90": 33.2,
+        "clusters": 1216
+      },
+      "direction_determinable": "90.0 %",
+      "reported_bearing": "0.0 %",
+      "reported_speed": "0.0 %",
+      "direction_id_present": "0.0 %",
+      "bearing_vs_computed_deg": {
+        "p50": null,
+        "p90": null,
+        "n": 0
+      },
+      "direction_reversals": 2422,
+      "travel_since_observation_m": {
+        "p50": 0.0,
+        "p90": 0.0,
+        "p99": 0.0
+      },
+      "track": {
+        "points": 208137,
+        "within_10m_of_rail": "98.2 %",
+        "within_25m_of_rail": "98.9 %",
+        "far_gt_50m": "0.7 %",
+        "multi_track_zone": "75.9 %",
+        "track_identifiable_in_multi": "0.0 %",
+        "parallel_track_separation_m": {
+          "p50": 4.4,
+          "p10": 3.7
+        },
+        "note": "σ GPS ≈ 20.4 m. Separación típica entre vías ≈ 4.4 m. Si σ ≥ separación/2, la vía NO es identificable."
+      },
+      "vehicle_ts_missing": 208178,
+      "distinct_ts_per_response_p50": 1.0,
+      "ts_semantics": "SIN timestamp por vehículo"
+    }
+  }
+}

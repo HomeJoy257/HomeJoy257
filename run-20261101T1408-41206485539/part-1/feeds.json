@@ -1,0 +1,20 @@
+{
+  "cercanias": {
+    "url": "https://gtfsrt.renfe.com/vehicle_positions.json",
+    "dataset": "ubicacion-vehiculos",
+    "resource_id": "f0926098-e517-41ff-a23f-71f8a9ba5498",
+    "resource_name": "vehicle_positions.json",
+    "last_modified": "2026-10-31T00:01:27.054583",
+    "license": "Creative Commons Attribution 4.0",
+    "organization": "RENFE"
+  },
+  "larga_distancia": {
+    "url": "https://gtfsrt.renfe.com/vehicle_positions_LD.json",
+    "dataset": "posicion-vehiculos-av-ld-md",
+    "resource_id": "dec31ddc-dcd4-4834-9907-70824c87e1bf",
+    "resource_name": "vehicle_positions_LD.json",
+    "last_modified": "2026-10-31T00:01:26.264207",
+    "license": "Creative Commons Attribution 4.0",
+    "organization": "RENFE"
+  }
+}
