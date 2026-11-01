@@ -1,0 +1,99 @@
+{
+  "products": {
+    "AVANT": 15673,
+    "AVE INT": 1612,
+    "ALVIA": 25677,
+    "EUROMED": 4149,
+    "AVE": 21447,
+    "AVLO": 4345,
+    "AVANT EXP": 688
+  },
+  "excluded_rows": {
+    "MD": 64499,
+    "REG.EXP.": 33238,
+    "REGIONAL": 26445,
+    "INTERCITY": 5477,
+    "PROXIMDAD": 3064,
+    "desconocido": 1864
+  },
+  "trains_distinct": 219,
+  "trips_distinct": 261,
+  "trains_by_hour_utc": {
+    "04": 2,
+    "05": 9,
+    "06": 22,
+    "07": 36,
+    "08": 52,
+    "09": 54,
+    "10": 54,
+    "11": 54,
+    "12": 53,
+    "13": 92,
+    "14": 54,
+    "15": 57,
+    "16": 57,
+    "17": 57,
+    "18": 55,
+    "19": 51,
+    "20": 46,
+    "21": 29,
+    "22": 11,
+    "23": 3
+  },
+  "provenance": {
+    "polls_ok": 8604,
+    "polls_error": 15,
+    "hosts": {
+      "gtfsrt.renfe.com": 8604
+    },
+    "header_minus_poll_s_p50": 3608.5,
+    "vehicle_ts_present": 0
+  },
+  "coord_refresh_s": {
+    "p50": 20.0,
+    "p90": 40.1,
+    "p99": 170.3
+  },
+  "coord_refresh_moving_s": {
+    "p50": 20.0,
+    "p90": 40.1,
+    "p99": 169.6
+  },
+  "gaps_moving_gt_60s": "3.9 %",
+  "gaps_moving_gt_120s": "1.6 %",
+  "implied_speed_kmh": {
+    "p50": 113.0,
+    "p90": 277.2,
+    "p99": 477.3,
+    "max_plausible_share_le_350": "96.3 %"
+  },
+  "impossible_jumps_gt_350kmh": 1920,
+  "advance_between_updates_m": {
+    "p50": 777.5,
+    "p90": 2494.2,
+    "p99": 6876.1
+  },
+  "direction": {
+    "cells_tested": 220,
+    "cells_odd_even_opposite": 209,
+    "parity_predicts_heading": "88.5 %"
+  },
+  "track": {
+    "points": 60000,
+    "dist_to_rail_m": {
+      "p50": 1.6,
+      "p90": 2.7,
+      "p99": 17.6
+    },
+    "share_lt_1m": "31.1 %",
+    "share_lt_3m": "91.5 %",
+    "share_lt_10m": "98.4 %",
+    "far_gt_60m": "0.9 %",
+    "multi_track_share": "84.9 %",
+    "multi_margin_m": {
+      "p50": 1.7,
+      "p90": 5.7
+    },
+    "multi_margin_gt_3m": "36.1 %"
+  }
+}
