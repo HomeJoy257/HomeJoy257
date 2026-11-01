@@ -40,5 +40,11 @@ for e in vp.get("entity", []):
                        "route_short_name": r.get("route_short_name"), "route_long_name": r.get("route_long_name")})
 rep["rt_vs_gtfs"] = dict(match); rep["rt_entities"] = len(vp.get("entity", [])); rep["sample"] = sample
 rep["rt_vp_example"] = vp.get("entity", [])[:2]; rep["rt_tu_example"] = tu.get("entity", [])[:2]
+# índice completo nº de tren / trip_id -> producto (para filtrar análisis a alta velocidad)
+with open(OUT / "products.csv", "w", newline="") as fh:
+    w = csv.writer(fh); w.writerow(["trip_id", "train_number", "product"])
+    for t in trips:
+        w.writerow([t["trip_id"], (t.get("trip_short_name") or "").strip(),
+                    rt.get(t["route_id"], {}).get("route_short_name", "").strip().upper()])
 (OUT / "gtfs_probe.json").write_text(json.dumps(rep, indent=1, ensure_ascii=False))
 print(json.dumps({k: rep[k] for k in ("files", "route_short_names", "rt_vs_gtfs", "rt_entities")}, ensure_ascii=False, indent=1))
